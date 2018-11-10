@@ -22,9 +22,7 @@ def update(self):
 	x_type = server.data["x"][0]           # Get type of variable x: "Int"
 	x = server.data["x"][1]                # Get value of variable x: 512
 	
-	if actions == 20:
-		server.show_screenshot(actions - 1)  # Preview the last screenshot
-	elif actions == 40:
+	if actions == 40:
 		server.restart_episode()             # Reset the emulator, set actions = 0
 
 # Replace the server's update function with ours
