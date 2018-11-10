@@ -21,12 +21,12 @@ from BHServer import BHServer
 server = BHServer(
 	ip = "127.0.0.1",
 	port = 1337,
-	update_interval = 5,
+	update_interval = 5,   # Update the server every 5 frames
 	use_grayscale = true,  # Store screenshots in greyscale
-	system = "N64",
-	speed = 6399,
-	sound = false,
-	save_slot = 1
+	system = "N64",        # Initialize server.controls to standard N64 controls
+	speed = 6399,          # Emulate at 6399% original game speed
+	sound = false,         # Turn off sound
+	save_slot = 1          # Load state 1
 )
 server.start()
 ```
