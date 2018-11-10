@@ -50,7 +50,7 @@ def update(self):
 	if actions == 20:
 		server.show_screenshot(actions - 1)  # Preview the last screenshot
 	elif actions == 40:
-	  server.restart_episode()             # Reset the emulator, set actions = 0
+		server.restart_episode()             # Reset the emulator, set actions = 0
 
 # Replace the server's update function with ours
 BHServer.update = update
@@ -93,9 +93,10 @@ c:saveScreenshot()
 
 -- Build a list of statements (to send in one request to server)
 local statements = {
-	c:updateStatement(),          -- No return
+	c:updateStatement(),          -- Call server's update(). No return
 	c:updateControlsStatement(),  -- Returns controls from server
-	c:checkRestartStatement()     -- Returns whether emulator should reset
+	c:checkRestartStatement(),    -- Returns whether emulator should reset
+	"SET x Int 512"               -- Set x = 512 (as a Python Int). No return
 }
 
 -- Send statements, grab results
