@@ -127,16 +127,27 @@ _**NOTE: BizHawk cannot send screenshots greater than an unknown size.**_ Somewh
 ## Server Message Syntax
 Sending custom TCP messages to the server is largely unnecessary since their functions are already implemented in the Lua client. However, for extended functionality, or for implementing functionality in a different language, here is the syntax:
 
-For retrieving any variable:
+Calling the server's update() function:
+* `UPDATE`
+
+Retrieving any variable:
 * `GET var`
 * If the variable does not exist, will return "None"
 
-For setting a predefined variable:
+Setting a pre-defined variable:
 * `SET var val`
-* val is expected to be a interpretable as the appropriate data type
+* val is expected to be interpretable as the appropriate data type
+* If the variable does not exist, will return "None"
 
-For setting a user-defined variable (not list):
+Setting a user-defined variable (not list):
 * `SET var type val`
 
-For setting a user-defined variable (list):
+Setting a user-defined list:
 * `SET var type[] val [e1, e2, ...]`
+
+Setting an element within a user-defined list:
+* `SET var idx val`
+
+A response will only be generated for each GET command. For a pre-defined variable, it will consist of the value (as a string). For a user-defined variable, it will consist of the data type (as a string) and the value (as a string), separated by a single space. If the variable is a dictionary, it will be represented exactly as one would be declared in python, e.g. {"var": val, "var": val}
+
+A message can consist of multiple statement as long as they are all separated by '; ', without a separator at the end. The response will follow the same format: all returns separated by '; ' except for the final one.
