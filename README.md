@@ -14,6 +14,8 @@ The primary role of the client is to play the game while sending data (e.g. scre
 ## Writing a tool with BHServer.py
 Your Python tool will interact with the data from BizHawk and send data back. Whether you're running a machine learning algorithm or just logging data, you'll do it here in Python. Rather than having a completely separate client, we can directly interact with the server using our own Python code.
 
+Before starting, note that the server uses various tools used in the Anaconda platform. We'll assume you're using that, or you already have the appropriate packages installed.
+
 We start off by importing, instantiating, and starting the server.
 
 ```Python
@@ -35,7 +37,7 @@ server.start()
 
 Every time the client calls an update, the server's update() function is called. You should write the update function yourself, then override the server's function with yours.
 
-Let's say we wanted to press the A button, grab the last screenshot, and preview it. The .lua tool will set a variable 'x' as an Int that we will read.
+Let's say we wanted to press the A button, and grab the last screenshot. The .lua tool will set a variable 'x' as an Int, so we'll read it.
 
 After 40 updates, we'll reset the emulator.
 
@@ -49,8 +51,6 @@ def update(self):
 	x_type = server.data["x"][0]           # Get type of variable x: "Int"
 	x = server.data["x"][1]                # Get value of variable x: 512
 	
-	if actions == 20:
-		server.show_screenshot(actions - 1)  # Preview the last screenshot
 	elif actions == 40:
 		server.restart_episode()             # Reset the emulator, set actions = 0
 
@@ -95,10 +95,10 @@ c:saveScreenshot()
 
 -- Build a list of statements (to send in one request to server)
 local statements = {
-	c:updateStatement(),             -- Call server's update(). No return
-	c:updateControlsStatement(),     -- Returns controls from server
-	c:checkRestartStatement(),       -- Returns whether emulator should reset
-	c:setStatement("x", "Int", 512)  -- Set x = 512 (as a Python Int). No return
+	c:setStatement("x", 512, "Int"),  -- Set x = 512 (as a Python Int). No return
+	c:updateStatement(),              -- Call server's update(). No return
+	c:updateControlsStatement(),      -- Returns controls from server
+	c:checkRestartStatement()         -- Returns whether emulator should reset
 }
 
 -- Send statements, grab results
