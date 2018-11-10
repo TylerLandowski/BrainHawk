@@ -95,10 +95,10 @@ c:saveScreenshot()
 
 -- Build a list of statements (to send in one request to server)
 local statements = {
-	c:updateStatement(),          -- Call server's update(). No return
-	c:updateControlsStatement(),  -- Returns controls from server
-	c:checkRestartStatement(),    -- Returns whether emulator should reset
-	"SET x Int 512"               -- Set x = 512 (as a Python Int). No return
+	c:updateStatement(),             -- Call server's update(). No return
+	c:updateControlsStatement(),     -- Returns controls from server
+	c:checkRestartStatement(),       -- Returns whether emulator should reset
+	c:setStatement("x", "Int", 512)  -- Set x = 512 (as a Python Int). No return
 }
 
 -- Send statements, grab results
