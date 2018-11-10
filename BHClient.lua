@@ -91,7 +91,7 @@ function DLSClient:useControls ()
     joypad.setanalog(self.controls)
 end
 
---[[ Colors the screen based on whether the last action was guessed randomly]]
+--[[ Colors the screen based on whether the last action was guessed randomly ]]
 function DLSClient:colorAction ()
     if self.guessed == true then
         gui.drawBox(0, 0, 20, 20, RED, RED)
