@@ -10,7 +10,7 @@ The primary role of the server is to store data. It's capable of interpretting s
 The primary role of the client is to play the game while sending data (e.g. screenshots and other data) to the server, and receiving instructions back (e.g. controls to use, emulator commands, and reset statements).
 
 ## Writing a tool with BHServer.py
-Your Python tool will interact with the data from BizHawk and send data back. Whether you're running a machine learning algorithm or just logging data, you'll do it here in Python.
+Your Python tool will interact with the data from BizHawk and send data back. Whether you're running a machine learning algorithm or just logging data, you'll do it here in Python. Rather than having a completely separate client, we can directly interact with the server using our own Python code.
 
 We start off by importing, instantiating, and starting the server.
 
@@ -57,7 +57,7 @@ BHServer.update = update
 ```
 
 ## Writing a tool with BHClient.lua
-Your Lua tool should be run after the server has begun running and is 'Ready'.
+Your Lua tool/BizHawk plugin should be run after the server has begun running and is 'Ready'.
 
 First, we need to import, instantiate, and initialize the client.
 The initialize() function retrieves settings for playing from the server, including:
