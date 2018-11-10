@@ -151,3 +151,5 @@ Setting an element within a user-defined list:
 A response will only be generated for each GET command. For a pre-defined variable, it will consist of the value (as a string). For a user-defined variable, it will consist of the data type (as a string) and the value (as a string), separated by a single space. If the variable is a dictionary, it will be represented exactly as one would be declared in python, e.g. {"var": val, "var": val}
 
 A message can consist of multiple statement as long as they are all separated by '; ', without a separator at the end. The response will follow the same format: all returns separated by '; ' except for the final one.
+
+The Lua client's get and sendStr/sendList functions behave differently. get will interpret the result according to the data type, while sendStr/sendList will return results while preserving them as strings.
