@@ -62,8 +62,8 @@ def to_grayscale(img):
 	return 0.2989 * img[:, :, 0] + 0.5870 * img[:, :, 1] + 0.1140 * img[:, :, 2]
 
 
-class BizHawkTCPServer:
-	bufsize = 38500
+class BHServer:
+	BUFSIZE = 38500
 
 	def __init__(
 			self,
@@ -82,7 +82,7 @@ class BizHawkTCPServer:
 			mode = "HUMAN",
 			# Frames to wait before emulator sends/receives data
 			update_interval = 5,
-			# Store screenshots as grayscale
+			# Store screenshots as grayscale FIXME
 			use_grayscale = False,
 			# System being emulated. Sets initial controls dictionary
 			system = "N64",
@@ -159,7 +159,7 @@ class BizHawkTCPServer:
 	# Connects the client and handles its message(s)
 	def handle_client_connection(self, client_socket):
 		while True:
-			msg = client_socket.recv(self.bufsize)
+			msg = client_socket.recv(self.BUFSIZE)
 			if not msg: break
 			self.log('Received {}'.format(msg))
 			self.close = False
@@ -490,13 +490,13 @@ class BizHawkTCPServer:
 			if i == len(actions) - 1:
 				action_map.append(action)
 			else:
-				BizHawkTCPServer.__mam_h(i + 1, action, actions, action_map)
+				BHServer.__mam_h(i + 1, action, actions, action_map)
 
 	@staticmethod
 	# Returns a discrete dict that maps an int to a discrete list of controls
 	def make_action_map(actions):
 		action_map = []
-		BizHawkTCPServer.__mam_h(0, {}, actions, action_map)
+		BHServer.__mam_h(0, {}, actions, action_map)
 		return action_map
 
 	@staticmethod

@@ -83,10 +83,10 @@ class DQN:
 			nvidia.add(Conv2D(36, kernel_size = (5, 5), strides = (2, 2), activation = 'relu'))
 			nvidia.add(BatchNormalization())
 			nvidia.add(Conv2D(48, kernel_size = (5, 5), strides = (2, 2), activation = 'relu'))
-			nvidia.add(BatchNormalization())
-			nvidia.add(Conv2D(64, kernel_size = (3, 3), activation = 'relu'))
-			nvidia.add(BatchNormalization())
-			nvidia.add(Conv2D(64, kernel_size = (3, 3), activation = 'relu'))
+			#nvidia.add(BatchNormalization())
+			#nvidia.add(Conv2D(64, kernel_size = (3, 3), activation = 'relu'))
+			#nvidia.add(BatchNormalization())
+			#nvidia.add(Conv2D(64, kernel_size = (3, 3), activation = 'relu'))
 			nvidia.add(Flatten())
 			nvidia.add(Dense(1164, activation = 'relu'))
 			drop_out = 1 - .6
@@ -271,8 +271,8 @@ class DQN:
 			self.auto_save = v["auto_save"]
 			self.ddqn = v["ddqn"]
 			self.target_update_interval = v["target_update_interval"]
-			self.num_replays = v.get("num_replays") or v.get("num_fits")  #
-			self.input_shape = v.get("input_shape") or v.get("input_shape:")  #
+			self.num_replays = v.get("num_replays")
+			self.input_shape = v.get("input_shape")
 			self.batch_size = v["batch_size"]
 			self.episodes_max = v["episodes_max"]
 			self.replay_size_max = v["replay_size_max"]

@@ -173,6 +173,16 @@ function DLSClient:set (var, val, dataType)
     end
 end
 
+--[[ TODO ]]
+function DLSClient:setStatement (var, val, dataType)
+    -- Send an HTTP post
+    if not dataType then
+        return "SET " .. var .. " " .. val
+    else
+        return "SET " .. var .. " " .. dataType .. " " .. val
+    end
+end
+
 --[[ Grabs the data type and value of the variable on server ]]
 function DLSClient:get (var)
     -- Send an HTTP post
@@ -204,6 +214,11 @@ function DLSClient:get (var)
 
         return dataType, val
     end
+end
+
+--[[ TODO ]]
+function DLSClient:getStatement (var)
+
 end
 
 --[[ Takes a screenshot of the game, sends it to server ]]
