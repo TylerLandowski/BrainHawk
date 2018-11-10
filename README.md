@@ -1,7 +1,9 @@
 # BrainHawk
 
 ## What is BrainHawk?
-BrainHawk allows you to host a server (in Python) as well as a client (in BizHawk) to communicate data in an easy way, particularly for machine learning. The focus is to avoid Lua scripting as much as possible. 
+BrainHawk allows you to host a server (in Python) as well as a client (in BizHawk) to communicate data in an easy way, particularly for machine learning. The focus is to avoid Lua scripting as much as possible, and provide functions and variables commonly used in learning algorithms, in order to organize projects in a clean way.
+
+An overview of the files and what to do with them is included below.
 
 ## BHServer.py
 The primary role of the server is to store data. It's capable of interpretting simple commands from a client, particularly to set or send data. 
