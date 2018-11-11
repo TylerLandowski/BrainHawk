@@ -88,7 +88,7 @@ while true do
 end
 ```
 
-Inside that if statement is where you should put code to communicate with the server. Let's say you want to send a screenshot, grab new controls, and ask if we should reset the game to the save. Inside the if statement, we'd place this code:
+Inside that if statement is where you should put code to communicate with the server. Let's say you want to send a screenshot, grab new controls, store some variable x on the server, and ask if we should reset the game to the save. Inside the if statement, we'd place this code:
 
 ```lua
 c:saveScreenshot()
