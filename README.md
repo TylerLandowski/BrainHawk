@@ -1,7 +1,7 @@
 # BrainHawk
 
 ## What is BrainHawk?
-BrainHawk allows you to host a server (in Python) as well as a client (in BizHawk) to communicate data in an easy way, particularly for machine learning. The focus is to avoid Lua scripting as much as possible, and provide functions and variables commonly used in learning algorithms, in order to organize projects in a clean way.
+BrainHawk allows you to host a server (in Python) as well as a client (in BizHawk) to communicate data in an easy way, with a focus on machine learning within video game environments. The focus is to avoid Lua scripting as much as possible, and provide functions and variables commonly used in learning algorithms, in order to organize projects in a clean way.
 
 An overview of the files and what to do with them is included below.
 
@@ -37,7 +37,7 @@ server.start()
 
 Every time the client calls an update, the server's update() function is called. You should write the update function yourself, then override the server's function with yours.
 
-Let's say we wanted to press the A button, and grab the last screenshot. The .lua tool will set a variable 'x' as an Int, so we'll read it.
+Let's say we wanted to press the A button, and grab the last screenshot. We expect the Lua tool that we write to set a variable 'x' as an Int, so we'll read it to make sure the client works correctly.
 
 After 40 updates, we'll reset the emulator.
 
@@ -59,7 +59,7 @@ BHServer.update = update
 ```
 
 ## Writing a tool with BHClient.lua
-Your Lua tool/BizHawk plugin should be run after the server has begun running and is 'Ready'.
+Your Lua tool/BizHawk plugin should be run after the server has begun running and is 'Ready.'.
 
 First, we need to import, instantiate, and initialize the client.
 The initialize() function retrieves settings for playing from the server, including:
