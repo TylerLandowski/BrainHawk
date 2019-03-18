@@ -1,7 +1,7 @@
 # BrainHawk
 
 ## What is BrainHawk?
-BrainHawk allows you to host a server (in Python) as well as a client (in BizHawk) to communicate data in an easy way, with a focus on machine learning within video game environments. The focus is to avoid Lua scripting as much as possible, and provide functions and variables commonly used in learning algorithms, in order to organize projects in a clean way.
+BrainHawk allows you to host a server (in Python) as well as a client (in BizHawk) to communicate data in an easy way, particularly for machine learning. The focus is to avoid Lua scripting as much as possible, and provide functions and variables commonly used in learning algorithms, in order to organize projects in a clean way.
 
 An overview of the files and what to do with them is included below.
 
@@ -13,8 +13,6 @@ The primary role of the client is to play the game while sending data (e.g. scre
 
 ## Writing a tool with BHServer.py
 Your Python tool will interact with the data from BizHawk and send data back. Whether you're running a machine learning algorithm or just logging data, you'll do it here in Python. Rather than having a completely separate client, we can directly interact with the server using our own Python code.
-
-Before starting, note that the server uses various tools used in the Anaconda platform. We'll assume you're using that, or you already have the appropriate packages installed.
 
 We start off by importing, instantiating, and starting the server.
 
@@ -37,7 +35,7 @@ server.start()
 
 Every time the client calls an update, the server's update() function is called. You should write the update function yourself, then override the server's function with yours.
 
-Let's say we wanted to press the A button, and grab the last screenshot. We expect the Lua tool that we write to set a variable 'x' as an Int, so we'll read it to make sure the client works correctly.
+Let's say we wanted to press the A button, grab the last screenshot, and preview it. The .lua tool will set a variable 'x' as an Int that we will read.
 
 After 40 updates, we'll reset the emulator.
 
@@ -51,6 +49,8 @@ def update(self):
 	x_type = server.data["x"][0]           # Get type of variable x: "Int"
 	x = server.data["x"][1]                # Get value of variable x: 512
 	
+	if actions == 20:
+		server.show_screenshot(actions - 1)  # Preview the last screenshot
 	elif actions == 40:
 		server.restart_episode()             # Reset the emulator, set actions = 0
 
@@ -59,7 +59,7 @@ BHServer.update = update
 ```
 
 ## Writing a tool with BHClient.lua
-Your Lua tool/BizHawk plugin should be run after the server has begun running and is 'Ready.'.
+Your Lua tool/BizHawk plugin should be run after the server has begun running and is 'Ready'.
 
 First, we need to import, instantiate, and initialize the client.
 The initialize() function retrieves settings for playing from the server, including:
@@ -88,17 +88,17 @@ while true do
 end
 ```
 
-Inside that if statement is where you should put code to communicate with the server. Let's say you want to send a screenshot, grab new controls, store some variable x on the server, and ask if we should reset the game to the save. Inside the if statement, we'd place this code:
+Inside that if statement is where you should put code to communicate with the server. Let's say you want to send a screenshot, grab new controls, and ask if we should reset the game to the save. Inside the if statement, we'd place this code:
 
 ```lua
 c:saveScreenshot()
 
 -- Build a list of statements (to send in one request to server)
 local statements = {
-	c:setStatement("x", 512, "Int"),  -- Set x = 512 (as a Python Int). No return
-	c:updateStatement(),              -- Call server's update(). No return
-	c:updateControlsStatement(),      -- Returns controls from server
-	c:checkRestartStatement()         -- Returns whether emulator should reset
+	c:updateStatement(),          -- Call server's update(). No return
+	c:updateControlsStatement(),  -- Returns controls from server
+	c:checkRestartStatement(),    -- Returns whether emulator should reset
+	"SET x Int 512"               -- Set x = 512 (as a Python Int). No return
 }
 
 -- Send statements, grab results
@@ -127,29 +127,16 @@ _**NOTE: BizHawk cannot send screenshots greater than an unknown size.**_ Somewh
 ## Server Message Syntax
 Sending custom TCP messages to the server is largely unnecessary since their functions are already implemented in the Lua client. However, for extended functionality, or for implementing functionality in a different language, here is the syntax:
 
-Calling the server's update() function:
-* `UPDATE`
-
-Retrieving any variable:
+For retrieving any variable:
 * `GET var`
 * If the variable does not exist, will return "None"
 
-Setting a pre-defined variable:
+For setting a predefined variable:
 * `SET var val`
-* val is expected to be interpretable as the appropriate data type
-* If the variable does not exist, will return "None"
+* val is expected to be a interpretable as the appropriate data type
 
-Setting a user-defined variable (not list):
+For setting a user-defined variable (not list):
 * `SET var type val`
 
-Setting a user-defined list:
+For setting a user-defined variable (list):
 * `SET var type[] val [e1, e2, ...]`
-
-Setting an element within a user-defined list:
-* `SET var idx val`
-
-A response will only be generated for each GET command. For a pre-defined variable, it will consist of the value (as a string). For a user-defined variable, it will consist of the data type (as a string) and the value (as a string), separated by a single space. If the variable is a dictionary, it will be represented exactly as one would be declared in python, e.g. {"var": val, "var": val}
-
-A message can consist of multiple statement as long as they are all separated by '; ', without a separator at the end. The response will follow the same format: all returns separated by '; ' except for the final one.
-
-The Lua client's get and sendStr/sendList functions behave differently. get will interpret the result according to the data type, while sendStr/sendList will return results while preserving them as strings.
