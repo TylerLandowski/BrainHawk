@@ -13,21 +13,19 @@ RED = 0x66FF0000
 -- ?
 -- =====================================================================================================================
 
-DLSClient = {}
-DLSClient.__index = DLSClient
+BHClient = {}
+BHClient.__index = BHClient
 
-function DLSClient:new (
-    addr,
-    saveSlot
+function BHClient:new (
+    addr
 )
     local self = {}
-    setmetatable(self, DLSClient)
+    setmetatable(self, BHClient)
 
     -- Address of the server
     self.addr = addr or "http://127.0.0.1:1337"
-    -- Slot where save state is located
-    self.saveSlot = saveSlot or 1
-
+    -- Path to save state
+    self.save = ""
     -- How many frames before BizHawk sends and receives data from server
     self.updateInterval = 20
     -- How many screenshots we've taken since the last episode
@@ -48,7 +46,7 @@ end
 
 --[[ Converts string-representation of a table to a table
      Input Format: "key:val,key:val,key:val" ]]
-function DLSClient:tableFromString (str)
+function BHClient:tableFromString (str)
     local table = {}
     
     for key, val in string.gmatch(str, "([^,]+):([^,]+)") do
@@ -60,7 +58,7 @@ end
 
 --[[ Returns a list of statements to a delimited string
      Output Format: "s1; s2; s3" ]]
-function DLSClient:stringFromList (list)
+function BHClient:stringFromList (list)
     local str = ""
 
     for _, elem in pairs(list) do
@@ -71,7 +69,7 @@ function DLSClient:stringFromList (list)
 end
 
 --[[ Returns a boolean given a string representing a bool ]]
-function DLSClient:boolFromString (str)
+function BHClient:boolFromString (str)
     return (str == "True" and true or false)
 end
 
@@ -80,19 +78,19 @@ end
 -- =====================================================================================================================
 
 --[[ Applies the controls table for the current frame ]]
-function DLSClient:advanceFrame ()
+function BHClient:advanceFrame ()
     emu.frameadvance()
 	self.frames = c.frames + 1
 end
 
 --[[ Applies the controls table for the current frame ]]
-function DLSClient:useControls ()
+function BHClient:useControls ()
     joypad.set(self.controls)
     joypad.setanalog(self.controls)
 end
 
 --[[ Colors the screen based on whether the last action was guessed randomly ]]
-function DLSClient:colorAction ()
+function BHClient:colorAction ()
     if self.guessed == true then
         gui.drawBox(0, 0, 20, 20, RED, RED)
         --gui.drawText(0, 0, "Random Action")
@@ -106,7 +104,7 @@ end
 -- =====================================================================================================================
 
 --[[ Returns whether it's time to update the server. Resets self.frames ]]
-function DLSClient:handleUpdate ()
+function BHClient:handleUpdate ()
     if self.frames == self.updateInterval then
         self.frames = 0
         return true
@@ -115,14 +113,14 @@ function DLSClient:handleUpdate ()
     end
 end
 
---[[ Sets the emu to the base state (loads savestate, numScreenshots = 0) ]]
-function DLSClient:restartEpisode ()
-    savestate.loadslot(1)
+--[[ Sets the emu to the base state (loads save, numScreenshots = 0) ]]
+function BHClient:restartEpisode ()
+    savestate.load("../" .. self.save)
     self.numScreenshots = 0
 end
 
 --[[ Sends the string to the server, and returns each output as a separate return ]]
-function DLSClient:sendStr (str)
+function BHClient:sendStr (str)
     -- Send an HTTP post
     local response = comm.httpPost(self.addr, str)
 
@@ -149,22 +147,22 @@ function DLSClient:sendStr (str)
 end
 
 --[[ Sends a list of statements to the server, and returns each output as a separate return ]]
-function DLSClient:sendList (list)
+function BHClient:sendList (list)
     return self:sendStr(self:stringFromList(list))
 end
 
 --[[ Call the server's update function ]]
-function DLSClient:update()
+function BHClient:update()
     self:sendStr("UPDATE")
 end
 
-function DLSClient:updateStatement()
+function BHClient:updateStatement()
     return "UPDATE"
 end
 
 --[[ Sets the variable on server to the given value, and labels it as the given data type.
      If no dataType is given, assume it to be a string. ]]
-function DLSClient:set (var, val, dataType)
+function BHClient:set (var, val, dataType)
     -- Send an HTTP post
     if not dataType then
         return self:sendStr("SET " .. var .. " " .. val)
@@ -174,7 +172,7 @@ function DLSClient:set (var, val, dataType)
 end
 
 --[[ TODO ]]
-function DLSClient:setStatement (var, val, dataType)
+function BHClient:setStatement (var, val, dataType)
     -- Send an HTTP post
     if not dataType then
         return "SET " .. var .. " " .. val
@@ -184,9 +182,13 @@ function DLSClient:setStatement (var, val, dataType)
 end
 
 --[[ Grabs the data type and value of the variable on server ]]
-function DLSClient:get (var)
-    -- Send an HTTP post
-    local body = self:sendStr("GET " .. var)
+function BHClient:get (var, response)
+    local body = response
+
+    if not response then
+        -- Send an HTTP post
+        body = self:sendStr("GET " .. var)
+    end
 
     -- Does the variable exist?
     if body == "None" then
@@ -217,18 +219,18 @@ function DLSClient:get (var)
 end
 
 --[[ TODO ]]
-function DLSClient:getStatement (var)
-
+function BHClient:getStatement (var)
+    return "GET " .. var
 end
 
 --[[ Takes a screenshot of the game, sends it to server ]]
-function DLSClient:saveScreenshot ()
+function BHClient:saveScreenshot ()
     comm.httpPostScreenshot()
     c.numScreenshots = c.numScreenshots + 1
 end
 
 --[[ Stores controls from server to controls table ]]
-function DLSClient:updateControls (controlsString)
+function BHClient:updateControls (controlsString)
     local controls = controlsString
 
     if not controls then
@@ -238,13 +240,13 @@ function DLSClient:updateControls (controlsString)
     self.controls = self:tableFromString(controlsString)
 end
 
-function DLSClient:updateControlsStatement()
+function BHClient:updateControlsStatement()
     return "GET controls"
 end
 
 --[[ Checks if the episode should restart.
      If yes, load the save state and set numScreenshots = 0 ]]
-function DLSClient:checkRestart (restart)
+function BHClient:checkRestart (restart)
     local bool = restart
 
     if not bool then
@@ -258,11 +260,25 @@ end
 
 --[[ Returns the statement used for checkRestart() function
      Return of statement should be passed to checkRestart() ]]
-function DLSClient:checkRestartStatement ()
+function BHClient:checkRestartStatement ()
     return "GET restart; SET restart False"
 end
 
-function DLSClient:checkGuessed (guessed)
+function BHClient:getSave (name)
+    local save = name
+
+    if not save then
+        save = self:sendStr("GET save")
+    end
+
+    self.save = save
+end
+
+function BHClient:getSaveStatement ()
+    return "GET save"
+end
+
+function BHClient:checkGuessed (guessed)
     local bool = guessed
 
     if not bool then
@@ -273,14 +289,14 @@ function DLSClient:checkGuessed (guessed)
 end
 
 --[[  ]]
-function DLSClient:checkGuessedStatement ()
+function BHClient:checkGuessedStatement ()
     return "GET guessed"
 end
 
 --[[ Loads BizHawk settings from the server. Sets the emu to the base state. ]]
-function DLSClient:initialize ()
+function BHClient:initialize ()
     comm.httpSetPostUrl(self.addr)
-    self.saveSlot = self:get("save_slot")
+    self:getSave()
     self.updateInterval = self:get("update_interval")
     client.SetSoundOn(self:get("sound"))
     client.speedmode(self:get("speed"))
@@ -292,4 +308,4 @@ end
 -- ?
 -- =====================================================================================================================
 
-print("learningClient.lua loaded!")
+print("BHClient.lua loaded!")

@@ -4,13 +4,18 @@
 @author: Tyler Landowski
 """
 
+# TODO Allow loading ROM through name
 # TODO Does self.socket break multithreading?
 # TODO Public, private, protected
 # TODO Return nil instead of None
 # TODO Continuous input
 # TODO Have sendStr return formatted data
 # TODO Allow recording of humans
+# TODO Autosave server data
+# TODO Try multiple clients
+# TODO Save CSV of debugging information
 
+# TODO Stop things from breaking when emulator restarts?
 # TODO Allow discluding variables from saving in DQN
 # TODO Allow screenshot saving
 # TODO Allow adjustment of screenshot resolution
@@ -35,6 +40,7 @@ import socket as s  # Allows data connections to clients
 import threading  # Allows multiple connections simultaneously
 import re  # Pattern-matching messages using regular expressions
 import ast  # Interpretting string representations of lists and ints
+import numpy as np  # For probability selection
 from urllib.parse import unquote  # Decoding url-safe screenshot strings from HTTP requests
 import base64  # Decoding Base64 screenshot strings
 import io  # Decodes Base64 to bytes
@@ -80,7 +86,7 @@ class BHServer:
 			# Data Settings
 			# -------------
 			mode = "HUMAN",
-			# Frames to wait before emulator sends/receives data
+			# Frames to wait before emulator sends/receives data. Used by emu client
 			update_interval = 5,
 			# Store screenshots as grayscale FIXME
 			use_grayscale = False,
@@ -95,8 +101,8 @@ class BHServer:
 			sound = False,
 			# Emulation speed percentage. Higher values train models faster. Max = 6399
 			speed = 6399,
-			# Slot to expect the save-state loaded by the emulator
-			save_slot = 1,
+			# Dictionary of save states and their probabilities
+			saves = {},
 	):
 		self.ip = ip  # Address to host server on
 		self.port = port  # Port to host server on
@@ -106,7 +112,10 @@ class BHServer:
 		self.frameskip = frameskip  # Frameskip used by emu
 		self.sound = sound  # Turns sound on
 		self.speed = speed  # Emulation speed percentage. Higher values train models faster
-		self.save_slot = save_slot  # Slot to expect the save-state loaded by the emulator
+		self.saves = saves  # Dictionary of save states and their probabilities
+			# Each save state will be loaded probabilistically
+			# "PathToFile": Probability
+		self.save = ""  # Path to the current save file. Updated with load_save()
 		self.socket = None  # Server socket
 		self.data = {}  # Stores {VAR: (DATATYPE, VAL)}. Utilized by SET and GET statements from clients.
 		self.actions = 0  # Actions taken during the current episode
@@ -115,6 +124,8 @@ class BHServer:
 		self.controls = {}  # Controls dict to be passed to emulator, or received from emulator if recording
 		self.close = False  # Closes client after message has been received
 		self.guessed = True  # Last action was picked randomly
+
+		self.load_save()  # Set initial save
 
 		if system == "N64":
 			self.controls = {
@@ -142,6 +153,20 @@ class BHServer:
 				"Reset": False,
 			}
 
+		elif system == "NES":
+			self.controls = {
+				"P1 A": False,
+				"P1 B": False,
+				"P1 Down": False,
+				"P1 Left": False,
+				"P1 Right": False,
+				"P1 Select": False,
+				"P1 Start": False,
+				"P1 Up": False,
+				"Power": False,
+				"Reset": False
+			}
+
 	# Prints the given message
 	def log(self, msg):
 		if self.logging: print(msg)
@@ -153,6 +178,8 @@ class BHServer:
 
 	# TODO
 	def restart_episode(self):
+		# NOTE: load_save() should also be called before update() is finished,
+		#       OR save should be set to an appropriate path
 		self.restart = True  # Tell the emulator to restart
 		self.actions = 0
 
@@ -195,7 +222,7 @@ class BHServer:
 	
 	def handle_msg(self, msg, client_socket):
 		# * A msg can begin with "UPDATE", "SAVE", "GET", "SET", "POST".
-		# * Every msg can hold multiple statements separated by '; '
+		# * Every msg can hold multiple statements separated by '; ' FIXME
 		# * An UPDATE will call self.update(). This is useful for when the emu is ready to receive new controls, or needs to check whether or not to reset
 		# * A SAVE will FIXME
 		# * A POST is simply an HTTP POST request
@@ -266,6 +293,8 @@ class BHServer:
 
 					if var.startswith("screenshot "): response += self.screenshots[int(var[11:])].decode("utf-8")
 					elif var == "controls":           response += dict_as_str(self.controls)
+					# Strings
+					elif var == "save":               response += self.save
 					# Integers
 					elif var == "update_interval":    response += str(self.update_interval)
 					elif var == "actions":            response += str(self.actions)
@@ -461,9 +490,20 @@ class BHServer:
 		if response.endswith("; "): client_socket.send(response.encode("utf-8")[:-2])
 		else:                       client_socket.send(response.encode("utf-8"))
 
+	# Loads a save state probabilistically using the self.saves
+	def load_save(self):
+		self.save = np.random.choice(
+			a = list(self.saves.keys()),
+			size = 1,
+			# Convert values into probabilities if not already
+			p = list(v/sum(self.saves.values()) for v in self.saves.values())
+		)[0]
+
 	# Previews an image of the screenshot at index idx
 	def show_screenshot(self, idx):
 		scrot = self.screenshots[idx]
+		print(scrot)
+		print(scrot.shape)
 		i = base64.b64decode(scrot)
 		i = io.BytesIO(i)
 		i = mpimg.imread(i, format = 'png')
