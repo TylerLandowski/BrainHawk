@@ -4,30 +4,27 @@
 @author: Tyler Landowski
 """
 
+# TODO Semicolons in message statements?
+# TODO Test syntax in Lua
+# TODO Save server data to disk (just screenshots?). Autosave?
 # TODO Allow loading ROM through name
 # TODO Does self.socket break multithreading?
+# TODO Try multiple clients
 # TODO Public, private, protected
 # TODO Return nil instead of None
 # TODO Continuous input
 # TODO Have sendStr return formatted data
-# TODO Allow recording of humans
-# TODO Autosave server data
-# TODO Try multiple clients
-# TODO Save CSV of debugging information
 
-# TODO Stop things from breaking when emulator restarts?
-# TODO Allow discluding variables from saving in DQN
 # TODO Allow screenshot saving
 # TODO Allow adjustment of screenshot resolution
 # TODO Reveal screenshot memory size
 # TODO ?    Allow endless screenshots, not terminated by episode
-# TODO Check if self.close breaks threading, rewrite it
+# TODO Check if self.close_client breaks threading, rewrite it
 # TODO Stricter RegEx's and patterns
 # TODO Fix screenshot encoding, showing b'tretre' in lua
 # TODO Allow pausing and resuming learning, saving progress
 # TODO Instructions
 # TODO Fix naming conventions, check for lower/uppercase strictness
-# TODO Rename BizHawk to Emulator
 # TODO Typecast set requests of lists and dictionaries
 # TODO Fix setting a previously defined variable as non-list, etc.
 # TODO Use unquote instead of .replace()
@@ -46,6 +43,7 @@ import base64  # Decoding Base64 screenshot strings
 import io  # Decodes Base64 to bytes
 import matplotlib.image as mpimg  # Loading numpy.ndarray from PNG bytes
 import matplotlib.pyplot as plt  # Visualizing screenshots
+import scipy.misc  # Saving screenshots
 
 
 # Convert string representation of bool to bool
@@ -86,44 +84,53 @@ class BHServer:
 			# Data Settings
 			# -------------
 			mode = "HUMAN",
-			# Frames to wait before emulator sends/receives data. Used by emu client
-			update_interval = 5,
-			# Store screenshots as grayscale FIXME
+			# Store screenshots as grayscale
 			use_grayscale = False,
 			# System being emulated. Sets initial controls dictionary
 			system = "N64",
-			# -----------------
-			# Emulator Settings
-			# -----------------
+			# ---------------
+			# Client Settings
+			# ---------------
+			# Frames to wait before emulator sends/receives data. Used by emu client
+			update_interval = 5,
 			# Frameskip used by emu
 			frameskip = 1,
-			# Turns sound on
+			# Game sound on?
 			sound = False,
 			# Emulation speed percentage. Higher values train models faster. Max = 6399
 			speed = 6399,
+			# ROM game file
+			rom = "",
 			# Dictionary of save states and their probabilities
-			saves = {},
+			saves = dict(),
 	):
 		self.ip = ip  # Address to host server on
 		self.port = port  # Port to host server on
 		self.logging = logging  # Print auxiliary messages to console for debugging
+		self.socket = None  # Server socket
+		self.close_client = False  # Closes client after message has been received
+		self.exit = False  # Tells client to exit
+		# FIXME This should be a local variable instead of global
+
 		self.update_interval = update_interval  # Frames to wait before emulator sends/receives data
 		self.use_grayscale = use_grayscale  # Store screenshots as grayscale
+
 		self.frameskip = frameskip  # Frameskip used by emu
 		self.sound = sound  # Turns sound on
 		self.speed = speed  # Emulation speed percentage. Higher values train models faster
+		self.rom = rom      # ROM game file
 		self.saves = saves  # Dictionary of save states and their probabilities
-			# Each save state will be loaded probabilistically
-			# "PathToFile": Probability
+		                    # Each save state will be loaded probabilistically
+			                # "PathToFile": Probability
 		self.save = ""  # Path to the current save file. Updated with load_save()
-		self.socket = None  # Server socket
-		self.data = {}  # Stores {VAR: (DATATYPE, VAL)}. Utilized by SET and GET statements from clients.
+
+		self.data = {}  # Stores {VAR: (DATATYPE, VAL)}. Utilized by SET and GET statements from clients
 		self.actions = 0  # Actions taken during the current episode
 		self.screenshots = {}  # Stores screenshots as numpy.ndarrays
 		self.restart = False  # Tells emu to restart. Set to False by client once emu has restarted
 		self.controls = {}  # Controls dict to be passed to emulator, or received from emulator if recording
-		self.close = False  # Closes client after message has been received
-		self.guessed = True  # Last action was picked randomly
+		self.guessed = False  # Last action was picked randomly?
+		self.emu_started = False  # Did the client just call START?
 
 		self.load_save()  # Set initial save
 
@@ -174,7 +181,7 @@ class BHServer:
 	# Called after every received "UPDATE" statement.
 	# Replace this with your code.
 	def update(self):
-		pass
+		print("ERROR: Update called, but not implemented")
 
 	# TODO
 	def restart_episode(self):
@@ -189,9 +196,9 @@ class BHServer:
 			msg = client_socket.recv(self.BUFSIZE)
 			if not msg: break
 			self.log('Received {}'.format(msg))
-			self.close = False
+			self.close_client = False
 			self.handle_msg(msg.decode("utf-8"), client_socket)
-			if self.close: break
+			if self.close_client: break
 		self.log("Client disconnected.")
 		client_socket.close()
 
@@ -204,6 +211,7 @@ class BHServer:
 		while True:
 			client_socket, address = self.socket.accept()
 			self.log('Accepted connection from {}:{}'.format(address[0], address[1]))
+
 			client_handler = threading.Thread(
 				target = self.handle_client_connection,
 				args = (client_socket,)
@@ -216,15 +224,27 @@ class BHServer:
 		client_handler.start()
 
 	# Stops the server
+	# TODO Implement me
 	def stop(self):
 		self.socket.close()
-		self.log("Server stopped.")
+		print("Got here")
+
+	# Cleans the server to resume learning
+	# The server will not have to restart every time the client restarts
+	def reset_learning(self):
+		self.actions = 0
+		self.screenshots = {}
+		self.emu_started = True
+		self.log("Initialized data to defaults")
+
+	# Requests that the client stop and disconnect
+	def stop_learning(self):
+		self.exit = True
 	
 	def handle_msg(self, msg, client_socket):
 		# * A msg can begin with "UPDATE", "SAVE", "GET", "SET", "POST".
 		# * Every msg can hold multiple statements separated by '; ' FIXME
 		# * An UPDATE will call self.update(). This is useful for when the emu is ready to receive new controls, or needs to check whether or not to reset
-		# * A SAVE will FIXME
 		# * A POST is simply an HTTP POST request
 		#   It is utilized by two BizHawk lua methods:
 		#   -comm.httpPost(), which sends a POST-formatted message, where we put all statements at the end (after "payload=")
@@ -258,24 +278,19 @@ class BHServer:
 				returns = False  # Indicates whether the statement returns anything
 
 				#
+				# Handle RESET request
+				#
+
+				if stmt.startswith("RESET"):
+					# Reset variables
+					self.reset_learning()
+
+				#
 				# Handle UPDATE request
 				#
 
-				if stmt.startswith("UPDATE"): self.update()
-
-				#
-				# Handle SAVE request
-				#
-
-				elif stmt.startswith("SAVE"):
-					returns = False
-					variables = stmt[5:].split()
-					dictionary = {}
-
-					for var in variables:
-						# FIXME
-						if var == "screenshots": dictionary[var] = self.screenshots
-						else: dictionary[var] = self.data[var]
+				elif stmt.startswith("UPDATE"):
+					self.update()
 
 				#
 				# Handle GET request
@@ -295,6 +310,7 @@ class BHServer:
 					elif var == "controls":           response += dict_as_str(self.controls)
 					# Strings
 					elif var == "save":               response += self.save
+					elif var == "rom":                response += self.rom
 					# Integers
 					elif var == "update_interval":    response += str(self.update_interval)
 					elif var == "actions":            response += str(self.actions)
@@ -317,7 +333,7 @@ class BHServer:
 							var = splt[0]
 							idx = int(splt[1])
 
-							# Does the list exist?
+							# Does the list not exist?
 							if self.data.get(var) is None:
 								response += "None"
 
@@ -325,7 +341,7 @@ class BHServer:
 								lst = self.data[var][1]
 
 								# Does the element exist?
-								if idx >= len(lst):
+								if idx >= len(lst) or idx < -1 * len(lst):
 									response += "None"
 
 								# Return the list element
@@ -340,10 +356,7 @@ class BHServer:
 							if val is None: response += "None"
 
 							else:
-								#
 								# Send response, formatted based on data type
-								#
-
 								if val[0] == "DICT": response += dict_as_str(val[1])
 								else:                response += val[0] + " " + str(val[1])
 
@@ -362,17 +375,33 @@ class BHServer:
 					after_set = match.group(1)
 
 					#
-					# Handle variable requests outside self.data TODO
+					# Handle variable requests outside self.data
 					#
 
+					# Dictionaries
 					if after_set.startswith("screenshot"):
-						pass  # FIXME
+						print("ERROR: screenshots is read only")
 					elif after_set.startswith("controls"):
-						pass  # FIXME
-					elif after_set.startswith("restart"):
-						self.restart = to_bool(after_set[10:])
+						print("ERROR: controls is read only")
+					# Strings
+					elif after_set.startswith("save"):
+						print("ERROR: save is read only")
+					# Integers
 					elif after_set.startswith("update_interval"):
 						self.update_interval = after_set[16:]
+					elif after_set.startswith("actions"):
+						print("ERROR: actions is read only")
+					elif after_set.startswith("speed"):
+						print("ERROR: speed is read only")
+					elif after_set.startswith("frameskip"):
+						print("ERROR: frameskip is read only")
+					# Booleans
+					elif after_set.startswith("restart"):
+						self.restart = after_set[8:]
+					elif after_set.startswith("sound"):
+						print("ERROR: sound is read only")
+					elif after_set.startswith("guessed"):
+						print("ERROR: guessed is read only")
 
 					#
 					# Handle variable requests inside self.data
@@ -385,13 +414,17 @@ class BHServer:
 						val = match.group(3)
 						existing_var = self.data.get(var)
 
+						has_idx = False
+
 						# Are we setting a list element?
-						if match.group(2)[0].isdigit():
+						if match.group(2)[0].isdigit():  # FIXME
+							has_idx = True
 							idx = int(match.group(2))
 
 							# Does the variable exist? FIXME
 							if existing_var is None:
-								print("ERROR: Attempt to index a non-existent list")
+								print("ERROR: Attempt to index non-existent list " + var)
+								return
 
 							data_type = existing_var[0]
 
@@ -400,24 +433,41 @@ class BHServer:
 
 						# Convert the value according to the datatype
 						if data_type.startswith("INT") or data_type.startswith("BOOL"):
-							val = ast.literal_eval(val)
+							try:
+								val = ast.literal_eval(val)
+							except:
+								print("ERROR: Data value does not match datatype")
+								return
+							# TODO Check if BOOL when INT, INT when BOOL,
+							# TODO INT inside BOOL list, BOOL inside INT list
 
 						# Are we working on a list?
 						if data_type.endswith("[]"):
+							if not isinstance(val, list) and not has_idx:
+								print("ERROR: List initialization value does not match datatype")
+								return
+
 							# Are we initializing a new list?
-							if existing_var is None: self.data[var] = (data_type, val)
+							if existing_var is None and not has_idx:
+								self.data[var] = (data_type, val)
 
-							# Are we setting a list element
+							# Are we setting a list element or re-initializing the list?
 							else:
-								lst = existing_var[1]
-
-								# Are we setting an existing element, or appending a new one?
-								if idx < len(lst):    lst[idx] = val
-								elif idx == len(lst): lst.append(val)
-
-								# Throw an error FIXME
+								# Are we given a data type rather than an index?
+								if not has_idx:
+									# Re-initialize the list
+									self.data[var] = (data_type, val)
 								else:
-									print("ERROR: List index out of range")
+									lst = existing_var[1]
+
+									# Are we setting an existing element, or appending a new one?
+									if idx < len(lst):    lst[idx] = val
+									elif idx == len(lst): lst.append(val)
+
+									# Throw an error
+									else:
+										print("ERROR: List " + var + "[" + str(idx) + "]" + " index out of range")
+										return
 
 						# Are we setting a non-list variable?
 						else:
@@ -428,12 +478,12 @@ class BHServer:
 				#
 
 				elif stmt.startswith("POST"):
-					# 68,859, 38,400
-					# 39655, 49835
-					response = "HTTP/1.1 200 OK\r\n\r\n"
-					self.close = True  # BizHawk expects connection to close after each Lua method call
+					# 68,859
 
-					# Check the size of the body TODO Check speed of RegEx, optimize
+					response = "HTTP/1.1 200 OK\r\n\r\n"
+					self.close_client = True  # BizHawk expects connection to close after each Lua method call
+
+					# Check the size of the body
 					match = re.match(".*Content-Length: (\d*).*", stmt, re.S)
 					cont_len = int(match.group(1))
 					self.log("CONTENT_LENGTH: " + str(cont_len))
@@ -499,15 +549,20 @@ class BHServer:
 			p = list(v/sum(self.saves.values()) for v in self.saves.values())
 		)[0]
 
+	# Saves a screenshot to the disk
+	def save_screenshot(self, idx, name):
+		plt.imsave(name, self.screenshots[idx])
+
+	# TODO Does this work?
+	def export_screenshots(self):
+		for idx in self.screenshots:
+			self.save_screenshot(self, int(idx), idx)
+
 	# Previews an image of the screenshot at index idx
+	# NOTE: Must be called from main thread, NOT from update()
 	def show_screenshot(self, idx):
 		scrot = self.screenshots[idx]
-		print(scrot)
-		print(scrot.shape)
-		i = base64.b64decode(scrot)
-		i = io.BytesIO(i)
-		i = mpimg.imread(i, format = 'png')
-		plt.imshow(i)
+		plt.imshow(scrot)
 		plt.show()
 
 	@staticmethod

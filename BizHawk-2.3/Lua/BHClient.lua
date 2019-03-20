@@ -50,7 +50,8 @@ function BHClient:tableFromString (str)
     local table = {}
     
     for key, val in string.gmatch(str, "([^,]+):([^,]+)") do
-        table[key] = val
+        -- TODO Convert based on data type?
+        table[key] = self:convertValue(val)
     end
 
     return table
@@ -70,7 +71,24 @@ end
 
 --[[ Returns a boolean given a string representing a bool ]]
 function BHClient:boolFromString (str)
-    return (str == "True" and true or false)
+    if str == "True" then
+        return true
+    elseif str == "False" then
+        return false
+    else
+        return null
+    end
+end
+
+--[[ Converts a value contained in a string to a guessed value ]]
+function BHClient:convertValue(val)
+    if val == "True" or val == "False" then
+        return self:boolFromString(val)
+    elseif tonumber(val) then
+        return tonumber(val)
+    else
+        return val
+    end
 end
 
 -- =====================================================================================================================
@@ -89,11 +107,20 @@ function BHClient:useControls ()
     joypad.setanalog(self.controls)
 end
 
+--[[ Returns whether it's time to update the server. Resets self.frames ]]
+function BHClient:checkForUpdate ()
+    if self.frames == self.updateInterval then
+        self.frames = 0
+        return true
+    else
+        return false
+    end
+end
+
 --[[ Colors the screen based on whether the last action was guessed randomly ]]
 function BHClient:colorAction ()
     if self.guessed == true then
         gui.drawBox(0, 0, 20, 20, RED, RED)
-        --gui.drawText(0, 0, "Random Action")
     else
         gui.drawBox(0, 0, 20, 20, GREEN, GREEN)
     end
@@ -103,23 +130,13 @@ end
 -- Server Interaction Functions
 -- =====================================================================================================================
 
---[[ Returns whether it's time to update the server. Resets self.frames ]]
-function BHClient:handleUpdate ()
-    if self.frames == self.updateInterval then
-        self.frames = 0
-        return true
-    else
-        return false
-    end
-end
-
---[[ Sets the emu to the base state (loads save, numScreenshots = 0) ]]
+--[[ Sets the emu to base state (loads save, numScreenshots = 0) ]]
 function BHClient:restartEpisode ()
     savestate.load("../" .. self.save)
     self.numScreenshots = 0
 end
 
---[[ Sends the string to the server, and returns each output as a separate return ]]
+--[[ Sends string of statements to the server, returns each output as separate return ]]
 function BHClient:sendStr (str)
     -- Send an HTTP post
     local response = comm.httpPost(self.addr, str)
@@ -146,34 +163,19 @@ function BHClient:sendStr (str)
     return unpack(returns)
 end
 
---[[ Sends a list of statements to the server, and returns each output as a separate return ]]
+--[[ Sends list of statements to the server, returns each output as separate return ]]
 function BHClient:sendList (list)
     return self:sendStr(self:stringFromList(list))
 end
 
---[[ Call the server's update function ]]
-function BHClient:update()
-    self:sendStr("UPDATE")
-end
-
+--[[ Returns statement to call server's update() function ]]
 function BHClient:updateStatement()
     return "UPDATE"
 end
 
---[[ Sets the variable on server to the given value, and labels it as the given data type.
+--[[ Returns statement to set a variable on server to value and datatype
      If no dataType is given, assume it to be a string. ]]
-function BHClient:set (var, val, dataType)
-    -- Send an HTTP post
-    if not dataType then
-        return self:sendStr("SET " .. var .. " " .. val)
-    else
-        return self:sendStr("SET " .. var .. " " .. dataType .. " " .. val)
-    end
-end
-
---[[ TODO ]]
 function BHClient:setStatement (var, val, dataType)
-    -- Send an HTTP post
     if not dataType then
         return "SET " .. var .. " " .. val
     else
@@ -181,126 +183,206 @@ function BHClient:setStatement (var, val, dataType)
     end
 end
 
---[[ Grabs the data type and value of the variable on server ]]
-function BHClient:get (var, response)
-    local body = response
-
+--[[ Returns the data type and value of the variable, given the server's response]]
+function BHClient:get (response)
     if not response then
-        -- Send an HTTP post
-        body = self:sendStr("GET " .. var)
-    end
-
-    -- Does the variable exist?
-    if body == "None" then
+        print("ERROR: No server response given to get()")
         return "None"
     end
 
-    -- Is the variable outside data?
-    if var == "restart" or var == "sound" or var == "guessed" then
-        return self:boolFromString(body)
-    elseif var == "update_interval" or var == "actions" or var == "speed" or var == "frameskip"
-    or     var == "save_slot" then
-        return tonumber(body)
-
-        -- Is the variable inside data?
-    else
-        -- Split the body
-        local dataType, val = string.match(body, "(%w+) (.+)")
-
-        -- Convert the value based on the data type
-        if dataType == "INT" then
-            val = tonumber(val)
-        elseif dataType == "BOOL" then
-            val = bool:boolFromString(val)
-        end
-
-        return dataType, val
+    -- Does the variable exist?
+    if response == "None" then
+        return "None"
     end
+
+    -- Split the response
+    local dataType, val = string.match(response, "(%w+) (.+)")
+
+    -- Were we given just a value?
+    if not dataType then
+        -- Guess the data type and convert
+        return self:convertValue(response)
+    end
+
+    -- Convert the value based on the data type
+    if dataType == "INT" then
+        val = tonumber(val)
+    elseif dataType == "BOOL" then
+        val = bool:boolFromString(val)
+    elseif dataType == "STRING" then
+        print("Got here STRING")
+    elseif dataType == "INT[]" then
+        print("Got here INT[]")
+        val = self:tableFromString(val)
+    elseif dataType == "BOOL[]" then
+        print("Got here BOOL[]")
+        val = self:tableFromString(val)
+    elseif dataType == "STRING[]" then
+        print("Got here STRING[]")
+        val = self:tableFromString(val)
+    end
+
+    return dataType, val
 end
 
---[[ TODO ]]
+--[[ Returns statement for getting value of a variable from server ]]
 function BHClient:getStatement (var)
+    if var == "controls" then
+        print("ERROR: Please use updateControls() to get controls")
+        return null
+    elseif var == "screenshot" then
+        print("ERROR: Getting screenshots not supported")
+        return null
+    end
+
     return "GET " .. var
 end
 
---[[ Takes a screenshot of the game, sends it to server ]]
+--[[ Returns value of a list's element, given a response from server ]]
+function BHClient:getListElem (response)
+    if not response then
+        print("ERROR: No server response given to getListElem()")
+        return null
+    end
+
+    -- Does the variable exist?
+    if response == "None" then
+        return "None"
+    end
+
+    -- Guess datatype and convert
+    return self:convertValue(response)
+end
+
+--[[ Returns statement to get an element of a list at an index
+     Server's response should be passed to getListElem() ]]
+function BHClient:getListElemStatement (list, idx)
+    -- Is the list outside data?
+    if list == "controls" or list == "screenshot" then
+        print("ERROR: List element grabbing from outside server's data not supported")
+        return null
+    elseif list == "restart" or list == "sound" or list == "guessed" or list == "update_interval" or list == "actions"
+         or list == "speed" or list == "frameskip" or list == "save_slot" or list == "controls" or list == "screenshot" then
+        print("ERROR: Attempt to index non-list " .. list)
+        return null
+    end
+
+    return "GET " .. list .. " " .. str(idx)
+end
+
+--[[ Takes screenshot of game window, sends to server ]]
 function BHClient:saveScreenshot ()
     comm.httpPostScreenshot()
     c.numScreenshots = c.numScreenshots + 1
 end
 
---[[ Stores controls from server to controls table ]]
-function BHClient:updateControls (controlsString)
-    local controls = controlsString
-
+--[[ Stores controls from server to controls table, given server's response ]]
+function BHClient:updateControls (controls)
     if not controls then
-        controls = self:sendStr("GET controls")
+        print("ERROR: No server response given to updateControls()")
+        return null
     end
 
-    self.controls = self:tableFromString(controlsString)
+    self.controls = self:tableFromString(controls)
 end
 
+--[[ Returns statement for updateControls()
+     Server's response should be passed to updateControls() ]]
 function BHClient:updateControlsStatement()
     return "GET controls"
 end
 
---[[ Checks if the episode should restart.
+--[[ Checks if the episode should restart, given server's response
      If yes, load the save state and set numScreenshots = 0 ]]
 function BHClient:checkRestart (restart)
-    local bool = restart
-
-    if not bool then
-        bool = self:sendStr("GET restart")
+    if not restart then
+        print("ERROR: No server response given to checkRestart()")
+        return
     end
 
-    if bool == "True" then
+    if restart == "True" then
         self:restartEpisode()
+    elseif not restart == "False" then
+        print("ERROR: Server malfunction when retrieving restart")
     end
 end
 
---[[ Returns the statement used for checkRestart() function
-     Return of statement should be passed to checkRestart() ]]
+--[[ Returns statement for checkRestart()
+     Server's response should be passed to checkRestart() ]]
 function BHClient:checkRestartStatement ()
     return "GET restart; SET restart False"
 end
 
-function BHClient:getSave (name)
-    local save = name
-
+--[[ Updates the save state, given the server's response ]]
+function BHClient:getSave (save)
     if not save then
-        save = self:sendStr("GET save")
+        print("ERROR: No server response given to getSave()")
+        return null
     end
 
     self.save = save
 end
 
+--[[ Returns statement for getSave()
+     Server's response should be passed to getSave() ]]
 function BHClient:getSaveStatement ()
     return "GET save"
 end
 
+--[[ Checks if the current controls were determined randomly ]]
 function BHClient:checkGuessed (guessed)
-    local bool = guessed
-
-    if not bool then
-        bool = self:get("guessed")
+    if not guessed then
+        print("ERROR: No server response given to checkGuessed()")
+        return
     end
 
     self.guessed = self:boolFromString(bool)
 end
 
---[[  ]]
 function BHClient:checkGuessedStatement ()
     return "GET guessed"
 end
 
---[[ Loads BizHawk settings from the server. Sets the emu to the base state. ]]
+function BHClient:getSoundStatement ()
+    return "GET sound"
+end
+
+function BHClient:getUpdateIntervalStatement ()
+    return "GET update_interval"
+end
+
+function BHClient:getSpeedStatement ()
+    return "GET speed"
+end
+
+function BHClient:getFrameskipStatement ()
+    return "GET frameskip"
+end
+
+--[[ Loads BizHawk settings from the server. Sets the emu to the base state ]]
 function BHClient:initialize ()
     comm.httpSetPostUrl(self.addr)
-    self:getSave()
-    self.updateInterval = self:get("update_interval")
-    client.SetSoundOn(self:get("sound"))
-    client.speedmode(self:get("speed"))
-    client.frameskip(self:get("frameskip"))
+
+    -- Prepare list of statements
+    local statements = {
+        "RESET",  -- No return
+        self:getSaveStatement(),
+        self:getUpdateIntervalStatement(),
+        self:getSoundStatement(),
+        self:getSpeedStatement(),
+        self:getFrameskipStatement()
+    }
+
+    -- Send statements to server, retrieve response
+    local save, updateInterval, sound, speed, frameskip = self:sendList(statements)
+
+    -- Handle each response and pass to appropriate functions
+    self:getSave(save)
+    self.updateInterval = self:get(updateInterval)
+    client.SetSoundOn(self:get(sound))
+    client.speedmode(self:get(speed))
+    client.frameskip(self:get(frameskip))
+
     self:restartEpisode()
 end
 

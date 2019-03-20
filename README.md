@@ -23,18 +23,18 @@ from BHServer import BHServer
 
 # Start the TCP server
 server = BHServer(
-	// Server Settings
+	# Server Settings
 	ip = "127.0.0.1",
 	port = 1337,
-	// Data Settings
-	use_grayscale = true,  # Store screenshots in grayscale
+	# Data Settings
+	use_grayscale = True,  # Store screenshots in grayscale
 	system = "N64",        # Initialize server.controls to standard N64 controls
-	// Client Settings
+	# Client Settings
 	update_interval = 5,   # Update to server every 5 frames
-	// Emulator Settings
+    # Emulator Settings
 	speed = 6399,          # Emulate at 6399% original game speed (max)
-	sound = false,         # Turn off sound
-	saves = {"Saves/MarioKart.State", 1} # Add a save state
+	sound = False,         # Turn off sound
+	saves = {"Save/MarioKart.State": 1} # Add a save state
 )
 server.start()
 ```
@@ -45,7 +45,7 @@ The server takes a large number of arguments that come in 4 types:
 * Client Settings - How the client should operate
 * Emulator Settings - How the emulator should be initialized and changed
 
-Note that there is argument for loading the ROM. Instead, save states are read for flexibility, and they are stored in a dictionary along numbers representing the respective probability. When the emulator is asked to reset, the server randomly picks a save to send back.
+Note that there is argument for loading the ROM. Instead, save states are read for flexibility, and they are stored in a dictionary along numbers representing the respective probability. When the emulator is asked to reset, the server randomly picks a save to send back. The relative path of the save, when read, will begin at the root of the BizHawk directory.
 
 Every so many frames, the client will 'update' to the server, by sending data and requesting data back. Every time the client calls an update, the server's update() function is called. You should write the update function yourself, then override the server's function with yours.
 
@@ -63,11 +63,12 @@ def update(self):
 	print(ss.shape)                        # Print shape of screenshot
 	x_type = server.data["x"][0]           # Get type of variable x: "Int"
 	x = server.data["x"][1]                # Get value of variable x: 512
-	
+
 	if actions == 20:
-		server.show_screenshot(actions - 1)  # Preview the last screenshot
+		server.save_screenshot(actions - 1, "my_screenshot.png")
 	elif actions == 40:
 		server.restart_episode()             # Reset the emulator, set actions = 0
+
 
 # Replace the server's update function with ours
 BHServer.update = update
@@ -75,7 +76,7 @@ BHServer.update = update
 
 The server file is responsible for telling the client how to operate, so you don't have to do it in Lua. Note that there are no user commands to send data directly to the client. Data is automatically sent to the client, but only when it is requested. For example, the ```restart_episode()``` command will set a flag telling the client to reset the emulator, which will be automatically checked at every update from the client. Most data needed by the client is sent as parameters to the server upon initialization - for example, emulation speed, update interval, and save location.
 
-You should now have a general idea of storing and accessing data on the server, and commanding the emulator.
+You should now have a general idea of storing and accessing data on the server, and commanding the emulator. This sample file is included as SampleTool.py. When run, it should print 'Ready.' and wait for the client.
 
 ## Writing a tool with BHClient.lua
 Your Lua tool/BizHawk plugin should be run only after the server has begun running and is 'Ready'.
@@ -128,11 +129,13 @@ c:updateControls(controlsString)
 c:checkRestart(restart)
 ```
 
-Since the server interprets a set of statements, we simply built a list of them and sent it using sendList(). sendList() will return the server's response to each statement in order. Statements like UPDATE and SET give no response, so we don't worry about them. The only reason saveScreenshot() is sent separately is because of hard limitations in the Lua libary of BizHawk.
+Since the server interprets a set of statements, we simply built a list of them and sent it using sendList(). sendList() will return the server's response to each statement in order. Statements like UPDATE and SET give no response, so we don't worry about them. The only reason saveScreenshot() is sent separately is because of hard limitations in the Lua library of BizHawk.
 
 Afterwards, we sent the returns from sendList() to their functions. The reasoning behind this was simplicity, but more importantly, minimizing the total latency which tends to build, especially given BizHawk's limitations. 
 
 Notice the updateStatement(). This tells the server to call its update() function, which does nothing until you implement it in your python program. Be careful with this. You'll want to call an update before you receive any data from the server. If your machine learning model generates controls given a screenshot, you'll want to send the screenshot, then update, then grab the controls in that order.
+
+You should now have an idea of how to write a Lua plugin that runs the game and commands the client by sending and receiving data. This sample file is included as SampleTool.lua. When run, it should print 'BHClient.lua loaded!' and continue running.
 
 ## Setting up BizHawk
 BrainHawk was designed specifically for the most recent version of BizHawk (2.3). It likely will not work on older versions.
@@ -146,6 +149,19 @@ _**NOTE: BizHawk cannot send screenshots greater than an unknown size.**_ Somewh
 ## Server Data
 Server data types are based off of Python's data types. Currently, only a few are supported:
 * Int
+
+There are many variables built in to the server outside of the data variable. Here are a few:
+* reset
+
+## Server Functions
+
+## Client Functions
+
+Most of the client's functions offer a 'statement' alternative. These statements can be compiled into a list and sent using the 'sendList' function. This minimizes unnecessary hang times by sending all data, and retrieving all data, to and from the server in one message.
+
+```lua set(var, val, dataType)```
+Set's a variable on the server.
+If no dataType is given, assume 
 
 ## Server Message Syntax
 Sending custom TCP messages to the server is largely unnecessary since their functions are already implemented in the Lua client. However, for extended functionality, or for implementing functionality in a different language, here is the syntax:
