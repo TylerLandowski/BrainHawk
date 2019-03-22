@@ -4,26 +4,18 @@
 @author: Tyler Landowski
 """
 
-# TODO Semicolons in message statements?
 # TODO Test syntax in Lua
 # TODO Save server data to disk (just screenshots?). Autosave?
-# TODO Allow loading ROM through name
 # TODO Does self.socket break multithreading?
-# TODO Try multiple clients
 # TODO Public, private, protected
-# TODO Return nil instead of None
-# TODO Continuous input
-# TODO Have sendStr return formatted data
 
-# TODO Allow screenshot saving
-# TODO Allow adjustment of screenshot resolution
+# TODO Semicolons in message statements?
 # TODO Reveal screenshot memory size
 # TODO ?    Allow endless screenshots, not terminated by episode
 # TODO Check if self.close_client breaks threading, rewrite it
 # TODO Stricter RegEx's and patterns
 # TODO Fix screenshot encoding, showing b'tretre' in lua
 # TODO Allow pausing and resuming learning, saving progress
-# TODO Instructions
 # TODO Fix naming conventions, check for lower/uppercase strictness
 # TODO Typecast set requests of lists and dictionaries
 # TODO Fix setting a previously defined variable as non-list, etc.
@@ -33,17 +25,17 @@
 # TODO Convert screenshot from dict to list
 # TODO Check for pointer safety - did we overwrite any variable once passed to a function?
 
+import sys
 import socket as s  # Allows data connections to clients
 import threading  # Allows multiple connections simultaneously
 import re  # Pattern-matching messages using regular expressions
 import ast  # Interpretting string representations of lists and ints
 import numpy as np  # For probability selection
-from urllib.parse import unquote  # Decoding url-safe screenshot strings from HTTP requests
+from urllib.parse import unquote, unquote_plus  # Decoding url-safe HTTP requests
 import base64  # Decoding Base64 screenshot strings
 import io  # Decodes Base64 to bytes
 import matplotlib.image as mpimg  # Loading numpy.ndarray from PNG bytes
 import matplotlib.pyplot as plt  # Visualizing screenshots
-import scipy.misc  # Saving screenshots
 
 
 # Convert string representation of bool to bool
@@ -109,7 +101,6 @@ class BHServer:
 		self.logging = logging  # Print auxiliary messages to console for debugging
 		self.socket = None  # Server socket
 		self.close_client = False  # Closes client after message has been received
-		self.exit = False  # Tells client to exit
 		# FIXME This should be a local variable instead of global
 
 		self.update_interval = update_interval  # Frames to wait before emulator sends/receives data
@@ -122,12 +113,14 @@ class BHServer:
 		self.saves = saves  # Dictionary of save states and their probabilities
 		                    # Each save state will be loaded probabilistically
 			                # "PathToFile": Probability
-		self.save = ""  # Path to the current save file. Updated with load_save()
+		self.save = ""      # Path to the current save file. Updated with load_save()
 
-		self.data = {}  # Stores {VAR: (DATATYPE, VAL)}. Utilized by SET and GET statements from clients
+		self.data = dict()  # Stores {VAR: (DATATYPE, VAL)}. Utilized by SET and GET statements from clients
+		self.episodes = 0   # Number of COMPLETED episodes. Incremented by restart_episode and stop_learning
 		self.actions = 0  # Actions taken during the current episode
-		self.screenshots = {}  # Stores screenshots as numpy.ndarrays
+		self.screenshots = dict()  # Stores screenshots as numpy.ndarrays
 		self.restart = False  # Tells emu to restart. Set to False by client once emu has restarted
+		self.exit = False  # Tells client to exit
 		self.controls = {}  # Controls dict to be passed to emulator, or received from emulator if recording
 		self.guessed = False  # Last action was picked randomly?
 		self.emu_started = False  # Did the client just call START?
@@ -189,18 +182,21 @@ class BHServer:
 		#       OR save should be set to an appropriate path
 		self.restart = True  # Tell the emulator to restart
 		self.actions = 0
+		self.episodes = self.episodes + 1
 
 	# Connects the client and handles its message(s)
 	def handle_client_connection(self, client_socket):
-		while True:
-			msg = client_socket.recv(self.BUFSIZE)
-			if not msg: break
-			self.log('Received {}'.format(msg))
-			self.close_client = False
-			self.handle_msg(msg.decode("utf-8"), client_socket)
-			if self.close_client: break
-		self.log("Client disconnected.")
-		client_socket.close()
+		try:
+			while True:
+				msg = client_socket.recv(self.BUFSIZE)
+				if not msg: break
+				self.log('Received {}'.format(msg))
+				self.close_client = False
+				self.handle_msg(msg.decode("utf-8"), client_socket)
+				if self.close_client: break
+		finally:
+			self.log("Client disconnected.")
+			client_socket.close()
 
 	# Checks for client connections
 	def run(self):
@@ -223,26 +219,24 @@ class BHServer:
 		client_handler = threading.Thread(target = self.run)
 		client_handler.start()
 
-	# Stops the server
-	# TODO Implement me
-	def stop(self):
-		self.socket.close()
-		print("Got here")
-
 	# Cleans the server to resume learning
-	# The server will not have to restart every time the client restarts
+	# The server will not have to restart every time the client restarts if client calls "RESET" upon starting
 	def reset_learning(self):
 		self.actions = 0
+		self.episodes = 0
 		self.screenshots = {}
 		self.emu_started = True
 		self.log("Initialized data to defaults")
 
 	# Requests that the client stop and disconnect
 	def stop_learning(self):
+		self.episodes = self.episodes + 1  # Mark another completed episode
 		self.exit = True
 	
 	def handle_msg(self, msg, client_socket):
-		# * A msg can begin with "UPDATE", "SAVE", "GET", "SET", "POST".
+		# NOTE: msg is url-safe. It is NOT decoded unless needed
+
+		# * A msg can begin with "UPDATE", "RESET", "GET", "SET", "POST".
 		# * Every msg can hold multiple statements separated by '; ' FIXME
 		# * An UPDATE will call self.update(). This is useful for when the emu is ready to receive new controls, or needs to check whether or not to reset
 		# * A POST is simply an HTTP POST request
@@ -265,6 +259,7 @@ class BHServer:
 		#
 		# Handle every statement inside msg
 		#
+
 
 		new_msg = True  # Indicates whether msg's value has changed (i.e. any POST with payload)
 		response = ""   # Response to the current statement
@@ -309,15 +304,20 @@ class BHServer:
 					if var.startswith("screenshot "): response += self.screenshots[int(var[11:])].decode("utf-8")
 					elif var == "controls":           response += dict_as_str(self.controls)
 					# Strings
-					elif var == "save":               response += self.save
 					elif var == "rom":                response += self.rom
+					elif var == "save":               response += self.save
 					# Integers
 					elif var == "update_interval":    response += str(self.update_interval)
 					elif var == "actions":            response += str(self.actions)
 					elif var == "speed":              response += str(self.speed)
 					elif var == "frameskip":          response += str(self.frameskip)
 					# Booleans
-					elif var == "restart":            response += str(self.restart)
+					elif var == "exit":
+						response += str(self.exit)
+						self.exit = False
+					elif var == "restart":
+						response += str(self.restart)
+						self.restart = False
 					elif var == "sound":              response += str(self.sound)
 					elif var == "guessed":            response += str(self.guessed)
 
@@ -367,9 +367,12 @@ class BHServer:
 				elif stmt.startswith("SET"):
 					self.log("SET requested...")
 
-					# SET arr INT[] []
-					# SET arr 1 54398
-					# SET x INT 5
+					# Setting variable:
+					# 	SET name type val
+					# Setting list:
+					# 	SET name type[] []
+					# Setting list element value:
+					# 	SET name idx val
 
 					match = re.match(r"SET (.*)", stmt, re.I)
 					after_set = match.group(1)
@@ -384,6 +387,8 @@ class BHServer:
 					elif after_set.startswith("controls"):
 						print("ERROR: controls is read only")
 					# Strings
+					elif after_set.startswith("rom"):
+						print("ERROR: rom is read only")
 					elif after_set.startswith("save"):
 						print("ERROR: save is read only")
 					# Integers
@@ -396,6 +401,8 @@ class BHServer:
 					elif after_set.startswith("frameskip"):
 						print("ERROR: frameskip is read only")
 					# Booleans
+					elif after_set.startswith("exit"):
+						print("ERROR: exit is read only")
 					elif after_set.startswith("restart"):
 						self.restart = after_set[8:]
 					elif after_set.startswith("sound"):
@@ -417,11 +424,11 @@ class BHServer:
 						has_idx = False
 
 						# Are we setting a list element?
-						if match.group(2)[0].isdigit():  # FIXME
+						if match.group(2)[0].isdigit():
 							has_idx = True
 							idx = int(match.group(2))
 
-							# Does the variable exist? FIXME
+							# Does the variable exist?
 							if existing_var is None:
 								print("ERROR: Attempt to index non-existent list " + var)
 								return
@@ -432,14 +439,18 @@ class BHServer:
 						else: data_type = match.group(2)
 
 						# Convert the value according to the datatype
-						if data_type.startswith("INT") or data_type.startswith("BOOL"):
+						if data_type.startswith("INT") or data_type.startswith("BOOL") or data_type.startswith("STRING"):
 							try:
 								val = ast.literal_eval(val)
 							except:
+								print(val)
 								print("ERROR: Data value does not match datatype")
 								return
 							# TODO Check if BOOL when INT, INT when BOOL,
 							# TODO INT inside BOOL list, BOOL inside INT list
+						else:
+							print("ERROR: Unrecognized datatype " + data_type)
+							return
 
 						# Are we working on a list?
 						if data_type.endswith("[]"):
@@ -509,8 +520,8 @@ class BHServer:
 							msg = client_socket.recv(cont_len).decode()
 							screenshot += msg
 
-						# Store screenshot as numpy.ndarray
-						img = base64.b64decode(unquote(screenshot))  # Using unquote because urlsafe_ doesn't work
+						# Store screenshot as numpy.ndarray (replace if already exists)
+						img = base64.b64decode(unquote_plus(screenshot))  # Using unquote because urlsafe_ doesn't work
 						img = mpimg.imread(io.BytesIO(img), format = 'png')
 						if self.use_grayscale:
 							img = to_grayscale(img)
@@ -520,12 +531,7 @@ class BHServer:
 					# Assume this is an HTTP-formatted POST command
 					else:
 						match = re.match(".*payload=(.*)", msg, re.S)
-						msg = match.group(1)\
-							.replace('+', ' ')\
-							.replace('%3B', ';')\
-							.replace('%5B', '[')\
-							.replace('%5D', ']')\
-							.replace('%2C', ',')
+						msg = unquote_plus(match.group(1))
 
 						# Re-iterate. handling body as new message
 						new_msg = True
@@ -554,6 +560,7 @@ class BHServer:
 		plt.imsave(name, self.screenshots[idx])
 
 	# TODO Does this work?
+	# Save all screenshots from current episode to disk
 	def export_screenshots(self):
 		for idx in self.screenshots:
 			self.save_screenshot(self, int(idx), idx)

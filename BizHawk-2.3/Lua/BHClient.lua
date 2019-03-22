@@ -24,6 +24,8 @@ function BHClient:new (
 
     -- Address of the server
     self.addr = addr or "http://127.0.0.1:1337"
+    -- Path to game ROM
+    self.rom = ""
     -- Path to save state
     self.save = ""
     -- How many frames before BizHawk sends and receives data from server
@@ -131,8 +133,8 @@ end
 -- =====================================================================================================================
 
 --[[ Sets the emu to base state (loads save, numScreenshots = 0) ]]
-function BHClient:restartEpisode ()
-    savestate.load("../" .. self.save)
+function BHClient:newEpisode ()
+    savestate.load(self.save)
     self.numScreenshots = 0
 end
 
@@ -163,18 +165,20 @@ function BHClient:sendStr (str)
     return unpack(returns)
 end
 
---[[ Sends list of statements to the server, returns each output as separate return ]]
+--[[ Sends list of statements to the server
+     Returns each output as separate return, if response is not empty ]]
 function BHClient:sendList (list)
     return self:sendStr(self:stringFromList(list))
 end
 
---[[ Returns statement to call server's update() function ]]
+--[[ Returns statement to call server's update() function
+     Server should send no (real) response ]]
 function BHClient:updateStatement()
     return "UPDATE"
 end
 
 --[[ Returns statement to set a variable on server to value and datatype
-     If no dataType is given, assume it to be a string. ]]
+     If no dataType is given, assume it to be a string ]]
 function BHClient:setStatement (var, val, dataType)
     if not dataType then
         return "SET " .. var .. " " .. val
@@ -183,7 +187,7 @@ function BHClient:setStatement (var, val, dataType)
     end
 end
 
---[[ Returns the data type and value of the variable, given the server's response]]
+--[[ Returns the data type and value of the variable, given server's response]]
 function BHClient:get (response)
     if not response then
         print("ERROR: No server response given to get()")
@@ -204,7 +208,7 @@ function BHClient:get (response)
         return self:convertValue(response)
     end
 
-    -- Convert the value based on the data type
+    -- Convert the value based on the data type TODO
     if dataType == "INT" then
         val = tonumber(val)
     elseif dataType == "BOOL" then
@@ -228,7 +232,7 @@ end
 --[[ Returns statement for getting value of a variable from server ]]
 function BHClient:getStatement (var)
     if var == "controls" then
-        print("ERROR: Please use updateControls() to get controls")
+        print("ERROR: Please use setControls() to get controls")
         return null
     elseif var == "screenshot" then
         print("ERROR: Getting screenshots not supported")
@@ -238,7 +242,8 @@ function BHClient:getStatement (var)
     return "GET " .. var
 end
 
---[[ Returns value of a list's element, given a response from server ]]
+--[[ Returns value of a list's element, given a response from server
+     Response should be retrieved from sending getListElemStatement() to server ]]
 function BHClient:getListElem (response)
     if not response then
         print("ERROR: No server response given to getListElem()")
@@ -270,30 +275,33 @@ function BHClient:getListElemStatement (list, idx)
     return "GET " .. list .. " " .. str(idx)
 end
 
---[[ Takes screenshot of game window, sends to server ]]
+--[[ Takes screenshot of game window, and sends to server
+     The server will store it at the newest index of the screenshot[] list ]]
 function BHClient:saveScreenshot ()
     comm.httpPostScreenshot()
     c.numScreenshots = c.numScreenshots + 1
 end
 
---[[ Stores controls from server to controls table, given server's response ]]
-function BHClient:updateControls (controls)
+--[[ Stores controls from server to controls table, given server's response
+     Response should be retrieved from sending setControlsStatement() to server ]]
+function BHClient:setControls (controls)
     if not controls then
-        print("ERROR: No server response given to updateControls()")
+        print("ERROR: No server response given to setControls()")
         return null
     end
 
     self.controls = self:tableFromString(controls)
 end
 
---[[ Returns statement for updateControls()
-     Server's response should be passed to updateControls() ]]
-function BHClient:updateControlsStatement()
+--[[ Returns statement for setControls()
+     Server's response should be passed to setControls() ]]
+function BHClient:setControlsStatement()
     return "GET controls"
 end
 
 --[[ Checks if the episode should restart, given server's response
-     If yes, load the save state and set numScreenshots = 0 ]]
+     If yes, load the save state and set numScreenshots = 0
+     Response should be retrieved from sending checkRestartStatement() to server ]]
 function BHClient:checkRestart (restart)
     if not restart then
         print("ERROR: No server response given to checkRestart()")
@@ -301,7 +309,7 @@ function BHClient:checkRestart (restart)
     end
 
     if restart == "True" then
-        self:restartEpisode()
+        self:newEpisode()
     elseif not restart == "False" then
         print("ERROR: Server malfunction when retrieving restart")
     end
@@ -310,26 +318,59 @@ end
 --[[ Returns statement for checkRestart()
      Server's response should be passed to checkRestart() ]]
 function BHClient:checkRestartStatement ()
-    return "GET restart; SET restart False"
+    return "GET restart"
 end
 
---[[ Updates the save state, given the server's response ]]
-function BHClient:getSave (save)
+--[[ Returns whether the client should exit, given server's response
+     Response should be retrieved from sending checkExitStatement() to server ]]
+function BHClient:checkExit (exit)
+    if not exit then
+        print("ERROR: No server response given to checkExit()")
+        return
+    end
+
+    if exit == "True" then
+        return true
+    elseif exit == "False" then
+        return false
+    else
+        print("ERROR: Server malfunction when retrieving exit")
+    end
+end
+
+--[[ Returns statement for checkExit()
+     Server's response should be passed to checkExit() ]]
+function BHClient:checkExitStatement ()
+    return "GET exit"
+end
+
+--[[ Retrieves the game ROM from server and loads it
+     Must be called at beginning of initialization, due to client.openrom()'s strange implementation ]]
+function BHClient:loadRom ()
+    self.rom = "../../" .. self:sendStr("GET rom")
+
+    client.openrom(self.rom)
+end
+
+--[[ Updates the save state, given server's response
+     Response should be retrieved from sending setSaveStatement() to server ]]
+function BHClient:setSave (save)
     if not save then
         print("ERROR: No server response given to getSave()")
         return null
     end
 
-    self.save = save
+    self.save = "../../" .. save
 end
 
 --[[ Returns statement for getSave()
      Server's response should be passed to getSave() ]]
-function BHClient:getSaveStatement ()
+function BHClient:setSaveStatement ()
     return "GET save"
 end
 
---[[ Checks if the current controls were determined randomly ]]
+--[[ Checks if the current controls were determined randomly, given server's response
+     Response should be retrieved from sending checkGuessedStatement() to server ]]
 function BHClient:checkGuessed (guessed)
     if not guessed then
         print("ERROR: No server response given to checkGuessed()")
@@ -339,51 +380,117 @@ function BHClient:checkGuessed (guessed)
     self.guessed = self:boolFromString(bool)
 end
 
+--[[ Returns statement for checkGuessedStatement()
+     Server's response should be passed to checkGuessed() ]]
 function BHClient:checkGuessedStatement ()
     return "GET guessed"
 end
 
-function BHClient:getSoundStatement ()
-    return "GET sound"
+--[[ Set's the client's update interval, given server's response
+     Response should be retrieved from sending setUpdateIntervalStatement() to server ]]
+function BHClient:setUpdateInterval (updateInterval)
+    if not updateInterval then
+        print("ERROR: No server response given to setUpdateInterval()")
+        return
+    end
+
+    self.updateInterval = self:get(updateInterval)
 end
 
-function BHClient:getUpdateIntervalStatement ()
+--[[ Returns statement for setUpdateInterval()
+     Server's response should be passed to setUpdateInterval() ]]
+function BHClient:setUpdateIntervalStatement ()
     return "GET update_interval"
 end
 
-function BHClient:getSpeedStatement ()
+--[[ Set's the emulator's sound ON/OFF, given server's response
+     Response should be retrieved from sending setSoundStatement() to server ]]
+function BHClient:setSound (sound)
+    if not sound then
+        print("ERROR: No server response given to setSound()")
+    end
+
+    client.SetSoundOn(self:get(sound))
+end
+
+--[[ Returns statement for setSound()
+     Server's response should be passed to setSound() ]]
+function BHClient:setSoundStatement ()
+    return "GET sound"
+end
+
+--[[ Set's the emulator's speed multiplier, given server's response
+     Response should be retrieved from sending setSpeedStatement() to server ]]
+function BHClient:setSpeed (speed)
+    if not speed then
+        print("ERROR: No server response given to setSpeed()")
+        return
+    end
+
+    client.speedmode(self:get(speed))
+end
+
+--[[ Returns statement for setSpeed()
+     Server's response should be passed to setSpeed() ]]
+function BHClient:setSpeedStatement ()
     return "GET speed"
 end
 
-function BHClient:getFrameskipStatement ()
+--[[ Set's the emulator's frameskip, given server's response
+     Response should be retrieved from sending setFrameskipStatement() to server ]]
+function BHClient:setFrameskip (frameskip)
+    if not frameskip then
+        print("ERROR: No server response given to getFrameskip()")
+        return
+    end
+
+    client.frameskip(self:get(frameskip))
+end
+
+--[[ Returns statement for setFrameskip()
+     Server's response should be passed to setFrameskip() ]]
+function BHClient:setFrameskipStatement ()
     return "GET frameskip"
+end
+
+function BHClient:cleanup()
+    userdata.set("init", false)
 end
 
 --[[ Loads BizHawk settings from the server. Sets the emu to the base state ]]
 function BHClient:initialize ()
     comm.httpSetPostUrl(self.addr)
 
+    if not (userdata.containskey("init") and userdata.get("init") == true) then
+        userdata.set("init", true)
+        self:loadRom()
+        return
+    end
+
+    userdata.set("init", false)
+
     -- Prepare list of statements
     local statements = {
         "RESET",  -- No return
-        self:getSaveStatement(),
-        self:getUpdateIntervalStatement(),
-        self:getSoundStatement(),
-        self:getSpeedStatement(),
-        self:getFrameskipStatement()
+        self:setSaveStatement(), -- Get save state for loading and resetting
+        self:setUpdateIntervalStatement(),
+        self:setSoundStatement(),
+        self:setSpeedStatement(),
+        self:setFrameskipStatement()
     }
 
     -- Send statements to server, retrieve response
     local save, updateInterval, sound, speed, frameskip = self:sendList(statements)
 
     -- Handle each response and pass to appropriate functions
-    self:getSave(save)
-    self.updateInterval = self:get(updateInterval)
-    client.SetSoundOn(self:get(sound))
-    client.speedmode(self:get(speed))
-    client.frameskip(self:get(frameskip))
+    self:setSave(save)
+    self:setUpdateInterval(updateInterval)
+    self:setSound(sound)
+    self:setSpeed(speed)
+    self:setFrameskip(frameskip)
 
-    self:restartEpisode()
+    -- Start a new episode of learning (load state, reset number of screenshots)
+    self:newEpisode()
 end
 
 -- =====================================================================================================================

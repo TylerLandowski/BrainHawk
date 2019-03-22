@@ -2,12 +2,27 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f491f57e-6c9a-4d09-980f-3cce74bf9edf" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BHServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/BHServer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Game/Breakout.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Game/GRADIUS.NES" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Game/MarioKart64USA.n64" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Game/Space Invaders.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Game/Video Olympics.bin" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua" beforeDir="false" afterPath="$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua" beforeDir="false" afterPath="$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/MarioKart64-0.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-0.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-1.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-2.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-3.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-4.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-5.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-6.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-7.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-8.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/Gradius-9.State" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/Save/MarioKart.State" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/BizHawk-2.3/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/BizHawk-2.3/config.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SampleTool.py" beforeDir="false" afterPath="$PROJECT_DIR$/SampleTool.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -21,10 +36,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/BHServer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="251" column="54" selection-start-line="251" selection-start-column="54" selection-end-line="251" selection-end-column="54" />
+            <state relative-caret-position="259">
+              <caret line="274" column="17" lean-forward="true" selection-start-line="274" selection-start-column="17" selection-end-line="274" selection-end-column="17" />
               <folding>
-                <element signature="e#1418#1474#0" expanded="true" />
+                <element signature="e#1309#1319#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -33,8 +48,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/SampleTool.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="222">
-              <caret line="39" column="19" lean-forward="true" selection-start-line="39" selection-start-column="19" selection-end-line="39" selection-end-column="19" />
+            <state relative-caret-position="172">
+              <caret line="24" column="17" lean-forward="true" selection-start-line="24" selection-start-column="17" selection-end-line="24" selection-end-column="17" />
               <folding>
                 <element signature="e#0#58#0" expanded="true" />
               </folding>
@@ -43,31 +58,19 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-138">
-              <caret line="3" column="14" lean-forward="true" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="52">
-              <caret line="367" column="14" selection-start-line="367" selection-start-column="14" selection-end-line="367" selection-end-column="14" />
+            <state relative-caret-position="252">
+              <caret line="232" column="36" selection-start-line="232" selection-start-column="36" selection-end-line="232" selection-end-column="36" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="FIRST">
-              <first_editor relative-caret-position="227">
-                <caret line="161" column="15" lean-forward="true" selection-start-line="161" selection-start-column="15" selection-end-line="161" selection-end-column="15" />
-              </first_editor>
-              <second_editor />
+        <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="35">
+              <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
             </state>
           </provider>
         </entry>
@@ -76,36 +79,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>self.close</find>
-      <find>speedmode</find>
-      <find>load_save</find>
-      <find>list initializ</find>
-      <find>sendList</find>
-      <find>x</find>
-      <find>handleUpdate</find>
-      <find>handleU</find>
-      <find>checkRestart</find>
-      <find>dataType</find>
-      <find>else if</find>
-      <find>getsaveSt</find>
-      <find>convertValue</find>
-      <find>getStatement</find>
-      <find>sendStr</find>
-      <find>updateControls</find>
-      <find>START</find>
-      <find>single</find>
-      <find>screenshots =</find>
-      <find>start_learning</find>
-      <find>client conn</find>
-      <find>New Conn</find>
-      <find>initialize ()</find>
-      <find>emu_st</find>
-      <find>start_learn</find>
-      <find>close(</find>
-      <find>close</find>
-      <find>self.resta</find>
-      <find>initialize</find>
-      <find>stop()</find>
+      <find>stop</find>
+      <find>save</find>
+      <find>getSave</find>
+      <find>state</find>
+      <find>restartEpiso</find>
+      <find>newEpiso</find>
+      <find>numScreenshots</find>
+      <find>given the</find>
+      <find>self.save</find>
+      <find>self.rom</find>
+      <find>screenshot</find>
+      <find>restart</find>
+      <find>updateControl</find>
+      <find>openrom</find>
+      <find>&quot;exit&quot;</find>
+      <find>gameinfo</find>
+      <find>loadRom</find>
+      <find>loadRom(</find>
+      <find>&quot;rom&quot;</find>
+      <find>rom</find>
+      <find>../</find>
+      <find>preproce</find>
+      <find>get(</find>
+      <find>%</find>
+      <find>unquote(</find>
+      <find>after_set = match.group(1)</find>
+      <find>unquote</find>
+      <find>unquo</find>
+      <find>get (</find>
+      <find>;</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -115,9 +118,9 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua" />
         <option value="$PROJECT_DIR$/SampleTool.py" />
         <option value="$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua" />
+        <option value="$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua" />
         <option value="$PROJECT_DIR$/BHServer.py" />
       </list>
     </option>
@@ -126,7 +129,7 @@
     <option name="x" value="-10" />
     <option name="y" value="-10" />
     <option name="width" value="1300" />
-    <option name="height" value="934" />
+    <option name="height" value="935" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -136,7 +139,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -159,9 +161,11 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
   </component>
   <component name="RunDashboard">
@@ -218,27 +222,28 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1616" height="886" extended-state="6" />
+    <frame x="-7" y="-7" width="2062" height="1136" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15779468" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.09490509" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="LuaCheck" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.23904383" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.23904383" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32934928" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32868525" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
-      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32934928" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32868525" />
+      <window_info anchor="bottom" id="LuaCheck" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="LuaJ" order="3" />
     </layout>
     <layout-to-restore>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15779468" />
@@ -265,43 +270,43 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="227">
-            <caret line="161" column="15" lean-forward="true" selection-start-line="161" selection-start-column="15" selection-end-line="161" selection-end-column="15" />
+          <first_editor relative-caret-position="2576">
+            <caret line="161" column="15" selection-start-line="161" selection-start-column="15" selection-end-line="161" selection-end-column="15" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua">
+    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="52">
-          <caret line="367" column="14" selection-start-line="367" selection-start-column="14" selection-end-line="367" selection-end-column="14" />
+        <state relative-caret-position="35">
+          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/SampleTool.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
-          <caret line="39" column="19" lean-forward="true" selection-start-line="39" selection-start-column="19" selection-end-line="39" selection-end-column="19" />
+        <state relative-caret-position="172">
+          <caret line="24" column="17" lean-forward="true" selection-start-line="24" selection-start-column="17" selection-end-line="24" selection-end-column="17" />
           <folding>
             <element signature="e#0#58#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
+    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-138">
-          <caret line="3" column="14" lean-forward="true" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="14" />
+        <state relative-caret-position="252">
+          <caret line="232" column="36" selection-start-line="232" selection-start-column="36" selection-end-line="232" selection-end-column="36" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/BHServer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="251" column="54" selection-start-line="251" selection-start-column="54" selection-end-line="251" selection-end-column="54" />
+        <state relative-caret-position="259">
+          <caret line="274" column="17" lean-forward="true" selection-start-line="274" selection-start-column="17" selection-end-line="274" selection-end-column="17" />
           <folding>
-            <element signature="e#1418#1474#0" expanded="true" />
+            <element signature="e#1309#1319#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -9,13 +9,14 @@ server = BHServer(
 	port = 1337,
 	# Data Settings
 	use_grayscale = True,  # Store screenshots in grayscale
-	system = "N64",        # Initialize server.controls to standard N64 controls
+	system = "N64",  # Initialize server.controls to standard N64 controls
 	# Client Settings
-	update_interval = 5,   # Update to server every 5 frames
+	update_interval = 5,  # Update to server every 5 frames
 	# Emulator Settings
-	speed = 6399,          # Emulate at 6399% original game speed (max)
-	sound = False,         # Turn off sound
-	saves = {"Save/MarioKart.State": 1}  # Add a save state
+	speed = 6399,  # Emulate at 6399% original game speed (max)
+	sound = False,  # Turn off sound
+	rom = "ROM/MarioKart64.n64",  # Add a game ROM file
+	saves = {"Save/MarioKart64.State": 1}  # Add a save state
 )
 server.start()
 
@@ -31,20 +32,21 @@ def update(self):
 	ss = self.screenshots[actions - 1]  # Grab the last screenshot (numpy.ndarray)
 
 	self.controls["P1 A"] = True         # Press the A button on Player 1's controller
-	x_type = self.data["x"][0]           # Get type of variable x: "Int"
-	x = self.data["x"][1]                # Get value of variable x: 512
+	x_type = self.data["x"][0]           # Get type of variable x: "Int". Set by client
+	x = self.data["x"][1]                # Get value of variable x: 512. Set by client
 
 	if actions == 20:
 		self.save_screenshot(actions - 1, "my_screenshot.png")
 	elif actions == 40:
-		self.stop()
 		self.restart_episode()             # Reset the emulator, set actions = 0
+		if self.episodes == 3:  # Stop client after 3 episodes
+			self.stop_learning()
 
 
 # Replace the server's update function with ours
 BHServer.update = update
 print("Ready.")
 
-# Optional loop. Runs in main thread rather than server
-while True:
-	pass
+# Optional loop that can be implemented. Runs in main thread rather than server
+# while True:
+#     pass
