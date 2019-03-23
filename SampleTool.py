@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt  # Visualizing screenshots
-
 from BHServer import BHServer
 
 # Start the TCP server
@@ -12,7 +10,7 @@ server = BHServer(
 	system = "N64",  # Initialize server.controls to standard N64 controls
 	# Client Settings
 	update_interval = 5,  # Update to server every 5 frames
-	# Emulator Settings
+	frameskip = 1,
 	speed = 6399,  # Emulate at 6399% original game speed (max)
 	sound = False,  # Turn off sound
 	rom = "ROM/MarioKart64.n64",  # Add a game ROM file
@@ -20,13 +18,12 @@ server = BHServer(
 )
 server.start()
 
-first_iteration = True
+# first_iteration = True TODO
 
 def update(self):
-	if server.emu_started:
-		print(server.actions)
-		print(server.screenshots[server.actions - 1].shape)
-		server.emu_started = False
+	if self.client_started():
+		print(self.actions)
+		print(self.screenshots[self.actions - 1].shape)
 
 	actions = self.actions  # Grab number of times update() has been called
 	ss = self.screenshots[actions - 1]  # Grab the last screenshot (numpy.ndarray)
@@ -36,11 +33,11 @@ def update(self):
 	x = self.data["x"][1]                # Get value of variable x: 512. Set by client
 
 	if actions == 20:
-		self.save_screenshot(actions - 1, "my_screenshot.png")
+		self.save_screenshots(0, actions - 1, "my_screenshot.png")
 	elif actions == 40:
-		self.restart_episode()             # Reset the emulator, set actions = 0
+		self.new_episode()      # Reset the emulator, actions = 0, ++episodes
 		if self.episodes == 3:  # Stop client after 3 episodes
-			self.stop_learning()
+			self.stop_client()
 
 
 # Replace the server's update function with ours

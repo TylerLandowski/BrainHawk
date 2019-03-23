@@ -10,7 +10,7 @@ GREEN = 0x6600FF00
 RED = 0x66FF0000
 
 -- =====================================================================================================================
--- ?
+-- BHClient Definition
 -- =====================================================================================================================
 
 BHClient = {}
@@ -25,16 +25,16 @@ function BHClient:new (
     -- Address of the server
     self.addr = addr or "http://127.0.0.1:1337"
     -- Path to game ROM
-    self.rom = ""
+    self.rom = "../../"
     -- Path to save state
-    self.save = ""
+    self.save = "../../"
     -- How many frames before BizHawk sends and receives data from server
-    self.updateInterval = 20
-    -- How many screenshots we've taken since the last episode
+    self.updateInterval = 0
+    -- How many screenshots we've taken since the last episode (probably won't be used)
     self.numScreenshots = 0
     -- How many frames we've advanced since the last update
     self.frames = 0
-    -- Controls to use until the next update
+    -- Controls to use until the next update (probably won't be used)
     self.controls = {}
     -- Whether the last action was guessed randomly
     self.guessed = true
@@ -52,7 +52,6 @@ function BHClient:tableFromString (str)
     local table = {}
     
     for key, val in string.gmatch(str, "([^,]+):([^,]+)") do
-        -- TODO Convert based on data type?
         table[key] = self:convertValue(val)
     end
 
@@ -97,10 +96,10 @@ end
 -- Emulator Functions
 -- =====================================================================================================================
 
---[[ Applies the controls table for the current frame ]]
+--[[ Plays the next frame using current controls ]]
 function BHClient:advanceFrame ()
     emu.frameadvance()
-	self.frames = c.frames + 1
+	self.frames = self.frames + 1
 end
 
 --[[ Applies the controls table for the current frame ]]
@@ -110,13 +109,20 @@ function BHClient:useControls ()
 end
 
 --[[ Returns whether it's time to update the server. Resets self.frames ]]
-function BHClient:checkForUpdate ()
+function BHClient:timeToUpdate ()
     if self.frames == self.updateInterval then
         self.frames = 0
         return true
     else
         return false
     end
+end
+
+--[[ Sets the emu to base state (loads save, numScreenshots = 0) ]]
+function BHClient:newEpisode ()
+    savestate.load(self.save)
+    self.numScreenshots = 0
+    self.frames = 0  -- This line usually isn't needed
 end
 
 --[[ Colors the screen based on whether the last action was guessed randomly ]]
@@ -131,12 +137,6 @@ end
 -- =====================================================================================================================
 -- Server Interaction Functions
 -- =====================================================================================================================
-
---[[ Sets the emu to base state (loads save, numScreenshots = 0) ]]
-function BHClient:newEpisode ()
-    savestate.load(self.save)
-    self.numScreenshots = 0
-end
 
 --[[ Sends string of statements to the server, returns each output as separate return ]]
 function BHClient:sendStr (str)
@@ -279,10 +279,10 @@ end
      The server will store it at the newest index of the screenshot[] list ]]
 function BHClient:saveScreenshot ()
     comm.httpPostScreenshot()
-    c.numScreenshots = c.numScreenshots + 1
+    self.numScreenshots = self.numScreenshots + 1
 end
 
---[[ Stores controls from server to controls table, given server's response
+--[[ Applies controls from server and saves to controls table, given server's response
      Response should be retrieved from sending setControlsStatement() to server ]]
 function BHClient:setControls (controls)
     if not controls then
@@ -291,6 +291,7 @@ function BHClient:setControls (controls)
     end
 
     self.controls = self:tableFromString(controls)
+    self:useControls()
 end
 
 --[[ Returns statement for setControls()
