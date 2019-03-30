@@ -4,6 +4,16 @@
 @author: Tyler Landowski
 """
 
+# TODO Error checking, especially of server arguments
+# TODO Function for getting screenshot size
+# TODO Make sure screenshots are float32
+# TODO Research mixed scalar and multiclass, multilabel NN regression
+# TODO Weight regularization (L1, L2)
+# TODO Dropout
+# TODO Check output shape of last conv layer, should be around 3x3
+# TODO DQN History
+
+# TODO Change rom/save path to root of server (absolute path)
 # TODO self.actions incremented after update() instead of screenshot(). Check if stable
 # TODO Check if sample tool code increments episodes correctly (new_episode, exit_client)
 
@@ -19,13 +29,7 @@
 # TODO Stricter RegEx's and patterns
 # TODO Fix screenshot encoding, showing b'tretre' in lua
 # TODO Allow pausing and resuming learning, saving progress
-# TODO Fix naming conventions, check for lower/uppercase strictness
-# TODO Typecast set requests of lists and dictionaries
-# TODO Fix setting a previously defined variable as non-list, etc.
-# TODO Use unquote instead of .replace()
-# TODO Allow save states from files
 # TODO Support more data types: float, dict, lists
-# TODO Convert screenshot from dict to list
 # TODO Check for pointer safety - did we overwrite any variable once passed to a function?
 
 import sys
@@ -34,7 +38,7 @@ import threading  # Allows multiple connections simultaneously
 import re  # Pattern-matching messages using regular expressions
 import ast  # Interpretting string representations of lists and ints
 import numpy as np  # For probability selection
-from urllib.parse import unquote, unquote_plus  # Decoding url-safe HTTP requests
+from urllib.parse import unquote_plus  # Decoding url-safe HTTP requests
 import base64  # Decoding Base64 screenshot strings
 import io  # Decodes Base64 to bytes
 import matplotlib.image as mpimg  # Loading numpy.ndarray from PNG bytes
@@ -42,15 +46,15 @@ import matplotlib.pyplot as plt  # Visualizing screenshots
 
 
 # Convert string representation of bool to bool
-def to_bool(str):
-    return True if str == "True" else False
+def to_bool(string):
+    return True if string == "True" else False
 
 
 # Returns a string representation of the dictionary
-def dict_as_str(dict):
+def dict_as_str(dictionary):
     string = ""
 
-    for key, val in dict.items():
+    for key, val in dictionary.items():
         string += ',' + key + ":" + str(val)
 
     return string[1:]
@@ -95,7 +99,7 @@ class BHServer:
             speed = 6399,
             # ROM game file
             rom = "",
-            # Dictionary of save states and their probabilities
+            # Dictionary of save states and their probabilities  {"path": prob}
             saves = dict(),
     ):
 
@@ -240,6 +244,7 @@ class BHServer:
     # Starts a new episode of learning
     def new_episode(self):
         # NOTE: load_save() should also be called before update() is finished,
+        self.load_save()  # TODO TODO TODO
         self.restart = True  # Tell the emulator to restart
         self.actions = 0
         self.episodes = self.episodes + 1
@@ -272,7 +277,6 @@ class BHServer:
     # Data Exportation Functions
     #
 
-    # TODO Does this work?
     # Saves a range of screenshots to disk from screenshots dictionary
     def save_screenshots(self, start, end, name):
         for idx in range(start, end + 1):
