@@ -61,16 +61,17 @@ def update(self):
 
 	actions = self.actions              # Number of times update() has been called
 	ss = self.screenshots[actions - 1]  # Grab the last screenshot (numpy.ndarray)
+	
 	self.controls["P1 A"] = True        # Press the A button on Player 1's controller
-	x_type = self.data["x"][0]          # Get type of variable x: "Int". Set by client
+	x_type = self.data["x"][0]          # Get type of variable x: "INT". Set by client
 	x = self.data["x"][1]               # Get value of variable x: 512. Set by client
 
 	if actions == 20:
-		self.save_screenshot(actions - 1, "my_screenshot.png")
+		self.save_screenshots(0, actions - 1, "my_screenshot.png")
 	elif actions == 40:
-		self.new_episode()             # Reset the emulator, set actions = 0
+		self.new_episode()      # Reset the emulator, actions = 0, ++episodes
 		if self.episodes == 3:  # Stop client after 3 episodes
-			self.stop_learning()
+			self.exit_client()
 			
 
 BHServer.update = update
@@ -127,24 +128,31 @@ local statements = {
     c:checkExitStatement()            -- Returns whether client should exit
 }
 
+ -- Save a screenshot on the server
+c:saveScreenshot()
+
+-- Build a list of statements (to send in one request to server)
+local statements = {
+    c:setStatement("x", 512, "INT"),  -- Set x = 512 (as a Python Int). No return
+    c:getStatement("x"),              -- Get value for x
+    c:updateStatement(),              -- Call server's update(). No return
+    c:setControlsStatement(),         -- Returns controls from server
+    c:checkRestartStatement(),        -- Returns whether emulator should reset
+    c:checkExitStatement()            -- Returns whether client should exit
+}
+
 -- Send statements, grab results
-local 
-    -- NO RESPONSE FROM SET
-    x_response,
-    -- NO RESPONSE FROM UPDATE
-    controls_response,
-    restart_response,
-    exit_response
-    = c:sendList(statements)
+local x_response, controls_response, restart_response, exit_response = c:sendList(statements)
 
 -- Send results to the appropriate functions
 local xType, x = c:get(x_response)
-console.writeline("x: " .. xType .. " " .. x)
 c:setControls(controls_response)
 c:checkRestart(restart_response)
-if c:checkExit(exit_response) then
-    break
-end
+
+console.writeline("x: " .. xType .. " " .. x)
+
+-- Did the server tell us to exit?
+if c:checkExit(exit_response) then break end
 ```
 
 Since the server interprets a set of statements, we simply built a list of them and sent it using sendList(). sendList() will return the server's response to each statement in order, if they send a usable (non-empty) response. Statements UPDATE and SET give no response, and we expect no return. The only reason saveScreenshot() is sent separately is because of hard limitations in the Lua library of BizHawk. The reasoning behind sending a list rather than individual commands was to minimize total latency of sending and receiving messages which tends to build, especially given BizHawk's limitations. The server will interpret commands first-come first-serve just like ordinary code, therefore controls will be determined only after the UPDATE is requested.
@@ -264,6 +272,7 @@ Sending custom TCP messages to the server is largely unnecessary since their fun
 For retrieving any variable (and its type):
 * `GET var`
 * If the variable does not exist, will return "None"
+* Returns the type, followed by a space, followed by the value
 
 For setting a defined variable:
 * `SET var val`

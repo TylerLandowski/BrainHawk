@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f491f57e-6c9a-4d09-980f-3cce74bf9edf" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BHServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/BHServer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BizHawk-2.3/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/BizHawk-2.3/config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SampleTool.py" beforeDir="false" afterPath="$PROJECT_DIR$/SampleTool.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,31 +16,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/README.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="FIRST">
-              <first_editor relative-caret-position="4128">
-                <caret line="258" column="60" selection-start-line="258" selection-start-column="60" selection-end-line="258" selection-end-column="60" />
-              </first_editor>
-              <second_editor />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3920">
+            <state relative-caret-position="449">
               <caret line="245" column="58" selection-start-line="245" selection-start-column="47" selection-end-line="245" selection-end-column="58" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="10" selection-start-line="10" selection-end-line="10" />
             </state>
           </provider>
         </entry>
@@ -58,16 +36,19 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BHServer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="592">
-              <caret line="37" column="9" selection-start-line="37" selection-start-column="7" selection-end-line="37" selection-end-column="9" />
+            <state relative-caret-position="4480">
+              <caret line="280" column="49" lean-forward="true" selection-start-line="280" selection-start-column="49" selection-end-line="280" selection-end-column="49" />
+              <folding>
+                <element signature="e#1322#1332#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/DQN.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="448">
+            <state relative-caret-position="3360">
               <caret line="210" column="22" selection-start-line="210" selection-start-column="22" selection-end-line="210" selection-end-column="22" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
@@ -88,11 +69,32 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/SampleTool.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="464">
-              <caret line="29" column="79" selection-start-line="29" selection-start-column="79" selection-end-line="29" selection-end-column="79" />
+            <state relative-caret-position="112">
+              <caret line="22" column="29" lean-forward="true" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="353">
+              <caret line="52" column="52" lean-forward="true" selection-start-line="40" selection-start-column="8" selection-end-line="52" selection-end-column="52" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="FIRST">
+              <first_editor relative-caret-position="360">
+                <caret line="285" column="71" lean-forward="true" selection-start-line="285" selection-start-column="71" selection-end-line="285" selection-end-column="71" />
+              </first_editor>
+              <second_editor />
             </state>
           </provider>
         </entry>
@@ -101,7 +103,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>emu_</find>
       <find>reset_learnin</find>
       <find>START&quot;</find>
       <find>RESET</find>
@@ -131,6 +132,7 @@
       <find>new_epi</find>
       <find>load_s</find>
       <find>new_ep</find>
+      <find>save_screensho</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -142,12 +144,12 @@
       <list>
         <option value="$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua" />
         <option value="$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua" />
-        <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/SampleTool.py" />
         <option value="$PROJECT_DIR$/BHKart.py" />
-        <option value="$PROJECT_DIR$/BHServer.py" />
         <option value="$PROJECT_DIR$/BizHawk-2.3/Lua/BHKart.lua" />
         <option value="$PROJECT_DIR$/DQN.py" />
+        <option value="$PROJECT_DIR$/BHServer.py" />
+        <option value="$PROJECT_DIR$/SampleTool.py" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -165,6 +167,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -187,7 +190,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -207,7 +209,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.BHKart">
+  <component name="RunManager" selected="Python.SampleTool">
     <configuration name="BHKart" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="BrainHawk" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -252,8 +254,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.BHKart" />
         <item itemvalue="Python.SampleTool" />
+        <item itemvalue="Python.BHKart" />
       </list>
     </recent_temporary>
   </component>
@@ -281,6 +283,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="886" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0982256" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -364,41 +367,10 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="FIRST">
-          <first_editor relative-caret-position="4128">
-            <caret line="258" column="60" selection-start-line="258" selection-start-column="60" selection-end-line="258" selection-end-column="60" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3920">
-          <caret line="245" column="58" selection-start-line="245" selection-start-column="47" selection-end-line="245" selection-end-column="58" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHKart.lua">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="704">
           <caret line="44" column="30" selection-start-line="44" selection-start-column="30" selection-end-line="44" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BHServer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="592">
-          <caret line="37" column="9" selection-start-line="37" selection-start-column="7" selection-end-line="37" selection-end-column="9" />
         </state>
       </provider>
     </entry>
@@ -412,20 +384,54 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/SampleTool.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="464">
-          <caret line="29" column="79" selection-start-line="29" selection-start-column="79" selection-end-line="29" selection-end-column="79" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/DQN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="448">
+        <state relative-caret-position="3360">
           <caret line="210" column="22" selection-start-line="210" selection-start-column="22" selection-end-line="210" selection-end-column="22" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/SampleTool.lua">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="353">
+          <caret line="52" column="52" lean-forward="true" selection-start-line="40" selection-start-column="8" selection-end-line="52" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="FIRST">
+          <first_editor relative-caret-position="360">
+            <caret line="285" column="71" lean-forward="true" selection-start-line="285" selection-start-column="71" selection-end-line="285" selection-end-column="71" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BizHawk-2.3/Lua/BHClient.lua">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="449">
+          <caret line="245" column="58" selection-start-line="245" selection-start-column="47" selection-end-line="245" selection-end-column="58" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/BHServer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4480">
+          <caret line="280" column="49" lean-forward="true" selection-start-line="280" selection-start-column="49" selection-end-line="280" selection-end-column="49" />
+          <folding>
+            <element signature="e#1322#1332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SampleTool.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="112">
+          <caret line="22" column="29" lean-forward="true" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
         </state>
       </provider>
     </entry>

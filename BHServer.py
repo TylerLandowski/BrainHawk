@@ -280,7 +280,7 @@ class BHServer:
     # Saves a range of screenshots to disk from screenshots dictionary
     def save_screenshots(self, start, end, name):
         for idx in range(start, end + 1):
-            plt.imsave(name, self.screenshots[idx])
+            plt.imsave(name + str(idx) + ".png", self.screenshots[idx])
 
     # Previews an image of the screenshot at index idx
     # NOTE: Must be called from main thread, NOT from update()

@@ -32,7 +32,7 @@ def update(self):
     x = self.data["x"][1]         # Get value of variable x: 512. Set by client
 
     if actions == 20:
-        self.save_screenshots(0, actions - 1, "my_screenshot.png")
+        self.save_screenshots(0, actions - 1, "my_screenshot")
     elif actions == 40:
         self.new_episode()      # Reset the emulator, actions = 0, ++episodes
         if self.episodes == 3:  # Stop client after 3 episodes
