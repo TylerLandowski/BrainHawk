@@ -117,17 +117,6 @@ The ```timeToUpdate()``` function will return True if the number of frames has r
 Inside that if statement is where you should put code to communicate with the server. Say you want to send a screenshot, set some variable x, and receive new controls to use. As always, we'll want to check if we should exit or restart. We'll want to call an UPDATE to the server after sending the screenshot so the server tool can determine the controls based off of it. Inside the if statement, we'd place this code:
 
 ```lua
-c:saveScreenshot()
-
-local statements = {
-    c:setStatement("x", 512, "INT"),  -- Set x = 512 (as a Python Int). No return
-    c:getStatement("x"),              -- Get value for x
-    c:updateStatement(),              -- Call server's update(). No return
-    c:setControlsStatement(),         -- Returns controls from server
-    c:checkRestartStatement(),        -- Returns whether emulator should reset
-    c:checkExitStatement()            -- Returns whether client should exit
-}
-
  -- Save a screenshot on the server
 c:saveScreenshot()
 
