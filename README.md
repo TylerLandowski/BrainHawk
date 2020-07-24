@@ -38,7 +38,7 @@ server = BHServer(
 server.start()
 ```
 
-The server takes a large number of arguments that come in 4 types:
+The server takes a large number of arguments that come in 3 types:
 * Server Settings - How server should operate
 * Data Settings - How server should store data
 * Client Settings - How the client should operate, how emulator should be initialized and changed
@@ -47,7 +47,7 @@ The ROM is loaded once emulator begins. The saves, however, are loaded into 'sav
 
 Every so many frames, the client will 'update' to the server, by sending data and requesting data back. Every time the client calls an update, the server's update() function is called. You should write the update function yourself, then override the server's function with yours. This function will synchronize data updates between the server and client, by allowing code to be called using a client's request. For example, the client sends data, calls an update for server to generate controls, and asks for controls back.
 
-TODO Let's say every time the server is updated, we want to press the A button, grab the last screenshot, and preview it. We want to grab a variable the client has stored, labeled "x", to demonstrate auxiliary data storage. The .lua tool will set a variable 'x' as an Int that we will read.
+Let's say every time the server is updated, we want to press the A button, grab the last screenshot, and preview it. We want to grab a variable the client has stored, labeled "x", to demonstrate auxiliary data storage. The .lua tool will set a variable 'x' as an Int that we will read.
 
 After 20 updates, we'll save the latest screenshot to disk
 After 40 updates, we'll start a new episode of learning, and reset emulator
